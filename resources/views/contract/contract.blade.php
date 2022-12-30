@@ -13,61 +13,80 @@
 </div>
 
 <div class="row">
-	<div class="col-md">
+	<div class="col-md-6">
 		<div class="table-responsive">
 			<table class="table table-striped table-bordered">
 				<tr>
 					<td class="row-header"><strong>Contract #</strong></td>
 					<td class="row-body">{{$contract->SubcontractNbr}}</td>
-
-					<td class="row-header"><strong>Jobsite</strong></td>
-					<td class="row-body">{{$contract->Project->Description}}</td>
 				</tr>
 				<tr>
 					<td class="row-header"><strong>Start Date</strong></td>
 					<td class="row-body">@date($contract->StartDate)</td>
-
-					<td class="row-header"><strong>Jobsite Address</strong></td>
-					<td class="row-body">{{$contract->Project->Addresses->AddressLine1}} <br>
-						{{$contract->Project->Addresses->City}}, {{$contract->Project->Addresses->State}} {{$contract->Project->Addresses->PostalCode}}</td>
-					</tr>
-					<tr>
-						<td class="row-header"><strong>Status</strong></td>
-						<td class="row-body">{{$contract->Status}}</td>
-
-						<td class="row-header"><strong>GC</strong></td>
-						<td class="row-body">{{$contract->Project->GC}}</td>
-					</tr>
-					<tr>
-						<td class="row-header"><strong>Contract Total</strong></td>
-						<td class="row-body">@currency($contract->SubcontractTotal)</td>
-
-						<td class="row-header"><strong></strong></td>
-						<td class="row-body"></td>
-					</tr>
-					<tr>
-						<td class="row-header"><strong>Description</strong></td>
-						<td class="row-body">{{$contract->Description}}</td>
-
-						<td class="row-header"><strong></strong></td>
-						<td class="row-body"></td>
-					</tr>
-					<tr>
-						<td class="row-header"><strong>Project Manager</strong></td>
-						<td class="row-body">{{$contract->PM}}</td>
-
-						<td class="row-header"><strong></strong></td>
-						<td class="row-body"></td>
-					</tr>
-					<tr>
-						<td class="row-header"><strong>Notes</strong></td>
-						<td class="row-body">{{$contract->note}}</td>
-
-						<td class="row-header"><strong></strong></td>
-						<td class="row-body"></td>
-					</tr>
-				</table>
-			</div>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Status</strong></td>
+					<td class="row-body">{{$contract->Status}}</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Vendor Ref</strong></td>
+					<td class="row-body">
+						@if (!empty($contract->VendorRef))
+						{{$contract->VendorRef}}
+						@endif
+					</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Contract Total</strong></td>
+					<td class="row-body">@currency($contract->SubcontractTotal)</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Description</strong></td>
+					<td class="row-body">{{$contract->Description}}</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Project Manager</strong></td>
+					<td class="row-body">{{$contract->PM}}</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Notes</strong></td>
+					<td class="row-body">{{$contract->note}}</td>
+				</tr>
+			</table>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<table class="table table-striped table-bordered">
+			<tr>
+				<td class="row-header"><strong>Jobsite</strong></td>
+				<td class="row-body">{{$contract->Project->Description}}</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Jobsite Address</strong></td>
+				<td class="row-body">{{$contract->Project->Addresses->AddressLine1}} <br>
+					{{$contract->Project->Addresses->City}}, {{$contract->Project->Addresses->State}} {{$contract->Project->Addresses->PostalCode}}</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>GC</strong></td>
+					<td class="row-body">{{$contract->Project->GC}}</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong></strong></td>
+					<td class="row-body"></td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong></strong></td>
+					<td class="row-body"></td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong></strong></td>
+					<td class="row-body"></td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong></strong></td>
+					<td class="row-body"></td>
+				</tr>
+			</table>
 		</div>
 	</div>
 
@@ -169,7 +188,12 @@
 						@csrf
 						<input type="hidden" name="contractNbr" id="contractNbr" value="{{$contract->SubcontractNbr}}">
 						<input type="hidden" name="vendor" id="vendor" value="{{$contract->Vendor}}">
-						<input type="hidden" name="vendorRef" id="vendorRef" value="{{$contract->VendorRef}}">
+						@if (empty($contract->VendorRef))
+						<input type="hidden" name="vendorRef" id="vendorRef" value="">
+						@else
+						<input type="hidden" name="vendorRef" id="vendorRef" value="{{$contract->VendorRef}}">	
+						@endif
+						
 
 						<div class="form-group">
 							<label>Description</label>
@@ -324,7 +348,7 @@
 			var billPerc = 0;
 
 
-			if (perc > 100) {
+			if (perc > 99) {
 				billAmt = unbilled;
 				billPerc = (unbilled/contract)*100;
 

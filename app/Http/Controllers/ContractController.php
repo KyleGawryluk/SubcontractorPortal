@@ -52,15 +52,10 @@ public function getContract($id)
 
     $contract->Project = json_decode($contract->Project);
 
-    // $contract->Bills = $this->parseLines($contract->Bills);
-
-    
-
     // echo "<pre>";
     // print_r($contract);
     // echo "</pre>";
     // exit;
-
 
     return view('contract.contract', ['contract'=>$contract]);
 }
@@ -107,11 +102,10 @@ public function createInvoice(Request $request)
     ->withBody(json_encode($data),'application/json')
     ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$select=ReferenceNbr,Details/POOrderNbr,Details/POOrderNbr,Details/InventoryID,Details/Qty&$expand=Details');
 
-
-    echo "<pre>";
-    print_r(json_decode($response->body()));
-    echo "</pre>";
-    exit;
+    // echo "<pre>";
+    // print_r(json_decode($response->body()));
+    // echo "</pre>";
+    // exit;
 
     return back();
 }

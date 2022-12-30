@@ -20,6 +20,7 @@
 					<th>Order #</th>
 					<th>Start Date</th>
 					<th>Status</th>
+					<th>Vendor Ref</th>
 					<th>Contract Total</th>
 					<th>Unbilled Total</th>
 					<th>Description</th>
@@ -31,6 +32,11 @@
 					<td><a href="{{URL::to('contract').'/'.$contract->SubcontractNbr}}" target="_blank">{{$contract->SubcontractNbr}}</a></td>
 					<td>@date($contract->StartDate)</td>
 					<td>{{$contract->Status}}</td>
+					<td>
+						@if (!empty($contract->VendorRef))
+						{{$contract->VendorRef}}
+						@endif
+					</td>
 					<td>@currency($contract->SubcontractTotal)</td>
 					<td>@currency($contract->UnbilledLineTotal)</td>
 					<td>{{$contract->Description}}</td>
