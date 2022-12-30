@@ -21,6 +21,7 @@
 					<th>Start Date</th>
 					<th>Status</th>
 					<th>Contract Total</th>
+					<th>Unbilled Total</th>
 					<th>Description</th>
 					<th>Project Manager</th>
 				</thead>
@@ -31,6 +32,7 @@
 					<td>@date($contract->StartDate)</td>
 					<td>{{$contract->Status}}</td>
 					<td>@currency($contract->SubcontractTotal)</td>
+					<td>@currency($contract->UnbilledLineTotal)</td>
 					<td>{{$contract->Description}}</td>
 					<td>{{$contract->PM}}</td>
 				</tr>

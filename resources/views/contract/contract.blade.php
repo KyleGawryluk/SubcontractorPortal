@@ -85,8 +85,9 @@
 						<th>Line #</th>
 						<th>Description</th>
 						<th>Qty</th>
-						<th>Unit Cost</th>
-						<th>Ext Cost</th>
+						<th>Contract Amount</th>
+						<th>Billed Amount</th>
+						<th>Unbilled Amount</th>
 						<th>Retained Amount</th>
 						<th>Notes</th>
 					</thead>
@@ -95,8 +96,9 @@
 						<td>{{$detail->LineNbr}}</td>
 						<td>{{$detail->LineDescription}}</td>
 						<td>{{$detail->OrderQty}}</td>
-						<td>@currency($detail->UnitCost)</td>
 						<td>@currency($detail->ExtCost)</td>
+						<td>@currency($detail->BilledAmount)</td>
+						<td>@currency($detail->UnbilledAmount)</td>
 						<td>@currency($detail->RetainageAmount)</td>
 						<td>{{$detail->note}}</td>
 					</tr>
@@ -112,6 +114,12 @@
 			<hr>
 		</div>
 	</div>
+	@if ($contract->Status == 'Open')
+	<div class="row">
+		<div class="col-md-12"><button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#invoiceModal">Create Invoice</button></div>
+	</div>
+	<br>
+	@endif
 	<div class="row">
 		<div class="col-md">
 			<div class="table-responsive">
@@ -120,32 +128,26 @@
 						<th>Date</th>
 						<th>Ref Number</th>
 						<th>Status</th>
-						<th>Vendor Ref</th>
 						<th>Billed Amount</th>
-						<th>Amount</th>
 						<th>Notes</th>
 					</thead>
-					@if(is_array($contract->Billing))
-					@foreach ($contract->Billing as $bill)
+					@if(is_array($contract->Bills))
+					@foreach ($contract->Bills as $bill)
 					<tr>
 						<td>@date($bill->Date)</td>
 						<td>{{$bill->ReferenceNbr}}</td>
 						<td>{{$bill->Status}}</td>
-						<td>{{$bill->VendorRef}}</td>
 						<td>@currency($bill->BilledAmt)</td>
-						<td>@currency($bill->Amount)</td>
 						<td>{{$bill->note}}</td>
 					</tr>
 					@endforeach
-					@elseif($contract->Billing != null)
+					@elseif($contract->Bills != null)
 					<tr>
-						<td>@date($contract->Billing->Date)</td>
-						<td>{{$contract->Billing->ReferenceNbr}}</td>
-						<td>{{$contract->Billing->Status}}</td>
-						<td>{{$contract->Billing->VendorRef}}</td>
-						<td>@currency($contract->Billing->BilledAmt)</td>
-						<td>@currency($contract->Billing->Amount)</td>
-						<td>{{$contract->Billing->note}}</td>
+						<td>@date($contract->Bills->Date)</td>
+						<td>{{$contract->Bills->ReferenceNbr}}</td>
+						<td>{{$contract->Bills->Status}}</td>
+						<td>@currency($contract->Bills->BilledAmt)</td>
+						<td>{{$contract->Bills->note}}</td>
 					</tr>
 					@endif
 				</table>
@@ -153,4 +155,219 @@
 		</div>
 	</div>
 
+	<div class="modal fade modal-lg" id="invoiceModal" tabindex="-1" aria-labelledby="invoiceModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="invoiceModalLabel">Create Invoice</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Contract: {{$contract->SubcontractNbr}}</p>
+
+					<form action="/invoice" method="post" >
+						@csrf
+						<input type="hidden" name="contractNbr" id="contractNbr" value="{{$contract->SubcontractNbr}}">
+						<input type="hidden" name="vendor" id="vendor" value="{{$contract->Vendor}}">
+						<input type="hidden" name="vendorRef" id="vendorRef" value="{{$contract->VendorRef}}">
+
+						<div class="form-group">
+							<label>Description</label>
+							<input type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="description" id="description">
+							@if ($errors->has('description'))
+							<div class="error">
+								{{ $errors->first('description') }}
+							</div>
+							@endif
+						</div>
+						<br>
+						<table class="table table-striped table-bordered">
+							<thead>
+								<th>Description</th>
+								<th>Contract Amount</th>
+								<th>Billed Amount</th>
+								<th>Unbilled Amount</th>
+								<th>Retained Amount</th>
+								<th>Percent to Bill</th>
+								<th>Amount to Bill</th>
+							</thead>
+							@foreach ($contract->SubcontractLines as $detail)
+							<tr>
+								<td>
+									{{$detail->LineDescription}}
+									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][contract]" id="contract{{$detail->LineNbr}}" value="{{$detail->ExtCost}}">
+									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][billed]"   id="billed{{$detail->LineNbr}}"   value="{{$detail->BilledAmount}}">
+									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][unbilled]" id="unbilled{{$detail->LineNbr}}" value="{{$detail->UnbilledAmount}}">
+									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][retained]" id="retained{{$detail->LineNbr}}" value="{{$detail->RetainageAmount}}">
+									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][line]" id="line{{$detail->LineNbr}}" value="{{$detail->LineNbr}}">
+								</td>
+								<td>@currency($detail->ExtCost)</td>
+								<td>@currency($detail->BilledAmount)</td>
+								<td>@currency($detail->UnbilledAmount)</td>
+								<td>@currency($detail->RetainageAmount)</td>
+								<td>
+									<div class="form-group">
+										<input type="text" data-type="percent" value="0" line-nbr="{{$detail->LineNbr}}" class="form-control {{ $errors->has('percent'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][percent]" id="percent{{$detail->LineNbr}}">
+										@if ($errors->has('percent'.$detail->LineNbr))
+										<div class="error">
+											{{ $errors->first('percent'.$detail->LineNbr) }}
+										</div>
+										@endif
+									</div>
+								</td>
+								<td>
+									<div class="form-group">
+										<input type="test" data-type="amount" value="0"  line-nbr="{{$detail->LineNbr}}" value="" data-type="currency"  class="form-control {{ $errors->has('amount'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][amount]" id="amount{{$detail->LineNbr}}">
+										@if ($errors->has('amount'.$detail->LineNbr))
+										<div class="error">
+											{{ $errors->first('amount'.$detail->LineNbr) }}
+										</div>
+										@endif
+									</div>
+								</td>
+							</tr>
+							@endforeach
+						</table>
+
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-primary">Create</button>
+					</form>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@stop
+
+	@section('scripts')
+
+	<script>
+		// $("input[data-type='currency']").on({
+		// 	keyup: function() {
+		// 		formatCurrency($(this));
+		// 	},
+		// 	blur: function() { 
+		// 		formatCurrency($(this), "blur");
+		// 	}
+		// });
+
+		$("input[data-type='percent']").on('keyup change', function() {
+			calcPercent($(this));
+		});
+
+
+		$("input[data-type='amount']").on('keyup change', function() {
+			calcAmount($(this));
+		});
+
+
+		function formatNumber(n) {
+			return n.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+		}
+
+
+		function formatCurrency(input, blur) {
+			var input_val = input.val();
+
+			if (input_val === "") { return; }
+
+			var original_len = input_val.length;
+
+			var caret_pos = input.prop("selectionStart");
+
+			if (input_val.indexOf(".") >= 0) {
+				var decimal_pos = input_val.indexOf(".");
+				var left_side = input_val.substring(0, decimal_pos);
+				var right_side = input_val.substring(decimal_pos);
+
+				left_side = formatNumber(left_side);
+				right_side = formatNumber(right_side);
+
+				if (blur === "blur") {
+					right_side += "00";
+				}
+
+				right_side = right_side.substring(0, 2);
+
+				input_val = "$" + left_side + "." + right_side;
+
+			} else {
+				input_val = formatNumber(input_val);
+				input_val = "$" + input_val;
+
+				if (blur === "blur") {
+					input_val += ".00";
+				}
+			}
+
+			input.val(input_val);
+
+			var updated_len = input_val.length;
+			caret_pos = updated_len - original_len + caret_pos;
+			input[0].setSelectionRange(caret_pos, caret_pos);
+		}
+
+
+
+		function calcPercent(percent) {
+			var perc = percent.val();
+			var lineNbr = percent.attr('line-nbr');
+			var contract = $("#contract"+lineNbr).val();
+			var billed = $("#billed"+lineNbr).val();
+			var unbilled = $("#unbilled"+lineNbr).val();
+			var retained = $("#retained"+lineNbr).val();
+			var prevPerc = billed/contract;
+			var amount = (perc/100)*contract;
+			var billAmt = 0;
+			var billPerc = 0;
+
+
+			if (perc > 100) {
+				billAmt = unbilled;
+				billPerc = (unbilled/contract)*100;
+
+			}else{
+				billAmt = amount;
+				billPerc = perc;
+			}
+
+			if(billAmt > 0){
+				$("#percent"+lineNbr).val(billPerc);
+				$("#amount"+lineNbr).val(billAmt);
+			}
+
+		}
+
+
+		function calcAmount(amount) {
+			var amt = parseInt(amount.val());
+			var lineNbr = amount.attr('line-nbr');
+			var contract = parseInt($("#contract"+lineNbr).val());
+			var billed = parseInt($("#billed"+lineNbr).val());
+			var unbilled = parseInt($("#unbilled"+lineNbr).val());
+			var retained = parseInt($("#retained"+lineNbr).val());
+			var prevPerc = billed/contract;
+			var perc = (amt/contract)*100;
+			billAmt = 0;
+			billPerc = 0;
+
+			if (amt > unbilled) {
+				billAmt = unbilled;
+				billPerc = (unbilled/contract)*100;
+
+			}else{
+				billAmt = amt;
+				billPerc = perc;
+			}
+
+			if(billAmt > 0){
+				$("#percent"+lineNbr).val(billPerc);
+				$("#amount"+lineNbr).val(billAmt);
+			}
+		}
+
+
+	</script>
 	@stop

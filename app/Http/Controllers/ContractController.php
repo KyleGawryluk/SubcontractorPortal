@@ -31,11 +31,11 @@ public function getContract($id)
 {
     $response = Http::withHeaders([
         'Cookie' => Cookie::get('acu_cookie'),
-    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines,Billing');
+    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines,Bills');
 
     $dataController = new DataController();
 
-    $response = $dataController->parseResponse($response);
+    // $response = $dataController->parseResponse($response);
 
     // echo "<pre>";
     // print_r(json_decode($response->body()));
@@ -52,12 +52,14 @@ public function getContract($id)
 
     $contract->Project = json_decode($contract->Project);
 
+    // $contract->Bills = $this->parseLines($contract->Bills);
+
     
 
-    echo "<pre>";
-    print_r($contract);
-    echo "</pre>";
-    exit;
+    // echo "<pre>";
+    // print_r($contract);
+    // echo "</pre>";
+    // exit;
 
 
     return view('contract.contract', ['contract'=>$contract]);
@@ -76,21 +78,42 @@ public function getContractProject($projectID)
 
     $project = $dataController->convertToSingleObject($response->body());
 
-    //     echo "<pre>";
-    // print_r(json_decode($project));
-    // echo "</pre>";
-    // exit;
-
-    // $projectAddress = json_decode($response->body());
-
-    // $project->address = $this->parseLines($projectAddress->Addresses);
-
-    // // echo "<pre>";
-    // // print_r($project);
-    // // echo "</pre>";
-    // // exit;
-
     return $project;
+}
+
+
+public function createInvoice(Request $request)
+{
+    $data = [];
+
+    $data['Vendor']['value'] = $request->input('vendor');
+    $data['VendorRef']['value'] = $request->input('vendorRef');
+    $data['Description']['value'] = $request->input('description');
+    $data['Details'] = [];
+
+    foreach ($request->input('lines') as $line) {
+        $newLine = [];
+        $newLine['POOrderType']['value'] = 'Subcontract';
+        $newLine['POOrderNbr']['value'] = $request->input('contractNbr');
+        $newLine['POLine']['value'] = $line['line'];
+        $newLine['UnitCost']['value'] = $line['amount'];
+        $newLine['Qty']['value'] = 1;
+        $data['Details'][] = $newLine;
+    }
+
+    $response = Http::withHeaders([
+        'Cookie' => Cookie::get('acu_cookie'),
+    ])
+    ->withBody(json_encode($data),'application/json')
+    ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$select=ReferenceNbr,Details/POOrderNbr,Details/POOrderNbr,Details/InventoryID,Details/Qty&$expand=Details');
+
+
+    echo "<pre>";
+    print_r(json_decode($response->body()));
+    echo "</pre>";
+    exit;
+
+    return back();
 }
 
 
@@ -113,16 +136,15 @@ public static function parseLines($dataset)
     $parsed = new \stdClass();
     $index = 0;
 
-    // echo "<pre>";
-    // print_r($jdata);
-    // echo "</pre>";
-    // exit;
+    if (is_null($jdata)) {
+        return null;
+    }
 
     foreach ($jdata as $key => $data) {
 
-       $parsed->$key = new \stdClass();
+      $parsed->$key = new \stdClass();
 
-       if (isset($data->value)) {
+      if (isset($data->value)) {
         $parsed->$key = $data->value;
     }else{
         $parsed->$key = $data;

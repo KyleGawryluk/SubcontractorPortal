@@ -10,43 +10,43 @@ class DataController extends Controller
 {
     public function parseResponse($response)
     {
-     $body = json_decode($response->body());
+       $body = json_decode($response->body());
 
         // echo "<pre>";
         // print_r($response->status());
         // echo "</pre>";
         // exit;
 
-     switch ($response->status()) {
-         case 200:
-         return $response;
-         break;
+       switch ($response->status()) {
+           case 200:
+           return $response;
+           break;
 
-         case 401:
-         return redirect('/')->withErrors($body->exceptionMessage);
-         break;
+           case 401:
+           return redirect('/')->withErrors($body);
+           break;
 
-         case 403:
-         return redirect('/')->withErrors($body->exceptionMessage);
-         break;
+           case 403:
+           return redirect('/')->withErrors($body);
+           break;
 
-         case 429:
-         return redirect('/')->withErrors($body->exceptionMessage);
-         break;
+           case 429:
+           return redirect('/')->withErrors($body);
+           break;
 
-         case 500:
-         return redirect('/')->withErrors($body->exceptionMessage);
-         break;
+           case 500:
+           return redirect('/')->withErrors($body);
+           break;
 
-         default:
-         return redirect('/')->withErrors('Oops, Something Went Wrong');
-         break;
-     }
+           default:
+           return redirect('/')->withErrors('Oops, Something Went Wrong');
+           break;
+       }
 
- }
+   }
 
- public function convertToObject($dataset)
- {
+   public function convertToObject($dataset)
+   {
     $jdata = json_decode($dataset);
     $parsed = new \stdClass();
     $index = 0;
@@ -81,11 +81,11 @@ public function convertToSingleObject($dataset)
         }elseif(is_array($data)){
             $parsed[$key] = $this->parseArray($parsed,$key,$data); 
         }else{
-        $parsed[$key] = $this->parseData($parsed,$key,$data);
+            $parsed[$key] = $this->parseData($parsed,$key,$data);
         }
     }
 
-   return json_encode($parsed);
+    return json_encode($parsed);
 }
 
 
@@ -93,7 +93,7 @@ public function convertToSingleObject($dataset)
 public function parseData($parsed,$key, $data)
 {
     return $data;
-      
+
 }
 
 public function parseObject($parsed,$key, $object)
@@ -102,15 +102,13 @@ public function parseObject($parsed,$key, $object)
     $newData = [];
 
     if (isset($object->value)) {
-        $newData = $object->value;
-    }else{
-     foreach ($object as $index => $data) {
+       $newData = $object->value;
+   }else{
+       foreach ($object as $index => $data) {
 
         if (isset($data->value)) {
-
-         $newData[$index] = $data->value;
-     }else{
-
+           $newData[$index] = $data->value;
+       }else{
          $newData[$index] = $data; 
      }
  }
@@ -133,18 +131,18 @@ public function parseArray($parsed,$key, $array)
         if (isset($object->value)) {
             $newData[$key][$count] = $object->value;
         }else{
-         foreach ($object as $index => $data) {
+           foreach ($object as $index => $data) {
 
             if (isset($data->value)) {
 
-             $newData[$count][$index] = $data->value;
-         }else{
+               $newData[$count][$index] = $data->value;
+           }else{
 
-             $newData[$count][$index] = $data; 
-         }
-     }
- }
- $count++;
+               $newData[$count][$index] = $data; 
+           }
+       }
+   }
+   $count++;
 }
 return $newData;
 }
