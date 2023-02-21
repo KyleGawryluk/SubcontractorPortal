@@ -22,6 +22,7 @@ Route::get('/logout', [HomeController::class, 'logout']);
 
 Route::get('/contracts', [ContractController::class, 'getContracts']);
 Route::get('/contract/{id}', [ContractController::class, 'getContract']);
+Route::get('/contract/pdf/{id}', [ContractController::class, 'printContract']);
 
 Route::post('/invoice', [ContractController::class, 'createInvoice']);
 

@@ -7,12 +7,13 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cookie;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\DataController;
+use PDF;
 
 class ContractController extends Controller
 {
 
- public function getContracts()
- {
+   public function getContracts()
+   {
     $response = Http::withHeaders([
         'Cookie' => Cookie::get('acu_cookie'),
     ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract');
@@ -28,6 +29,15 @@ class ContractController extends Controller
 
 
 public function getContract($id)
+{
+    $contract = $this->buildContract($id);
+
+    return view('contract.contract', ['contract'=>$contract]);
+}
+
+
+
+public function buildContract($id)
 {
     $response = Http::withHeaders([
         'Cookie' => Cookie::get('acu_cookie'),
@@ -52,12 +62,14 @@ public function getContract($id)
 
     $contract->Project = json_decode($contract->Project);
 
+    $contract = $this->checkBilling($contract);
+
     // echo "<pre>";
     // print_r($contract);
     // echo "</pre>";
     // exit;
 
-    return view('contract.contract', ['contract'=>$contract]);
+    return $contract;
 }
 
 
@@ -107,7 +119,42 @@ public function createInvoice(Request $request)
     // echo "</pre>";
     // exit;
 
+
+
     return back();
+}
+
+
+public function checkBilling($contract)
+{
+    $total = $contract->SubcontractTotal;
+
+    $billed = 0;
+
+    foreach ($contract->Bills as $bill) {
+     $billed += $bill->BilledAmt;
+     }
+
+     if ($billed < $total) {
+        $contract->BillComplete = 0;
+    }else{
+       $contract->BillComplete = 1;
+    }
+
+    return $contract;
+}
+
+
+
+public function printContract($id)
+{
+  $contract = $this->buildContract($id);
+
+  $pdf = PDF::loadView('contract.contract_pdf',['contract'=>$contract])->setPaper('letter', 'portrait');
+
+  return $pdf->download('SGH Concepts - '.$contract->SubcontractNbr.' - '.$contract->Project->Description.'.pdf');
+
+  // return view('contract.contract_pdf', ['contract'=>$contract]);
 }
 
 
@@ -148,9 +195,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
-   if (is_object($value)) {
-       $parsed->$key = '';
-   }
+ if (is_object($value)) {
+     $parsed->$key = '';
+ }
 }
 
 return $parsed;

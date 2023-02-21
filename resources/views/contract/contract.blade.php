@@ -2,11 +2,19 @@
 
 @section('styles')	
 <style>
-
+	.action-bar{
+		margin-bottom: 15px;
+	}
 </style>
 @stop
 
 @section('content')
+
+<div class="row action-bar">
+	<div class="col-md-12">
+		<a class="btn btn-warning pdf" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
+	</div>
+</div>
 
 <div class="row">
 	<h3 class="section-color shadow-sm">{{$contract->Project->Description}}</h3>
@@ -14,46 +22,44 @@
 
 <div class="row">
 	<div class="col-md-6">
-		<div class="table-responsive">
-			<table class="table table-striped table-bordered">
-				<tr>
-					<td class="row-header"><strong>Contract #</strong></td>
-					<td class="row-body">{{$contract->SubcontractNbr}}</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Start Date</strong></td>
-					<td class="row-body">@date($contract->StartDate)</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Status</strong></td>
-					<td class="row-body">{{$contract->Status}}</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Vendor Ref</strong></td>
-					<td class="row-body">
-						@if (!empty($contract->VendorRef))
-						{{$contract->VendorRef}}
-						@endif
-					</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Contract Total</strong></td>
-					<td class="row-body">@currency($contract->SubcontractTotal)</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Description</strong></td>
-					<td class="row-body">{{$contract->Description}}</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Project Manager</strong></td>
-					<td class="row-body">{{$contract->PM}}</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong>Notes</strong></td>
-					<td class="row-body">{{$contract->note}}</td>
-				</tr>
-			</table>
-		</div>
+		<table class="table table-striped table-bordered">
+			<tr>
+				<td class="row-header"><strong>Contract #</strong></td>
+				<td class="row-body">{{$contract->SubcontractNbr}}</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Start Date</strong></td>
+				<td class="row-body">@date($contract->StartDate)</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Status</strong></td>
+				<td class="row-body">{{$contract->Status}}</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Vendor Ref</strong></td>
+				<td class="row-body">
+					@if (!empty($contract->VendorRef))
+					{{$contract->VendorRef}}
+					@endif
+				</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Contract Total</strong></td>
+				<td class="row-body">@currency($contract->SubcontractTotal)</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Description</strong></td>
+				<td class="row-body">{{$contract->Description}}</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Project Manager</strong></td>
+				<td class="row-body">{{$contract->PM}}</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Notes</strong></td>
+				<td class="row-body">{{$contract->note}}</td>
+			</tr>
+		</table>
 	</div>
 	<div class="col-md-6">
 		<table class="table table-striped table-bordered">
@@ -133,7 +139,7 @@
 			<hr>
 		</div>
 	</div>
-	@if ($contract->Status == 'Open')
+	@if ($contract->Status == 'Open' && $contract->BillComplete == 0)
 	<div class="row">
 		<div class="col-md-12"><button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#invoiceModal">Create Invoice</button></div>
 	</div>
@@ -268,15 +274,6 @@
 	@section('scripts')
 
 	<script>
-		// $("input[data-type='currency']").on({
-		// 	keyup: function() {
-		// 		formatCurrency($(this));
-		// 	},
-		// 	blur: function() { 
-		// 		formatCurrency($(this), "blur");
-		// 	}
-		// });
-
 		$("input[data-type='percent']").on('keyup change', function() {
 			calcPercent($(this));
 		});
@@ -391,6 +388,10 @@
 				$("#amount"+lineNbr).val(billAmt);
 			}
 		}
+
+
+
+
 
 
 	</script>
