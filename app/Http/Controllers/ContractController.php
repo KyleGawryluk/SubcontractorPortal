@@ -12,24 +12,29 @@ use PDF;
 class ContractController extends Controller
 {
 
-   public function getContracts()
-   {
-    $response = Http::withHeaders([
-        'Cookie' => Cookie::get('acu_cookie'),
+ public function getContracts()
+ {
+     $response = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
     ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract');
 
-    $dataController = new DataController();
+    // echo "<pre>";
+    // print_r($response->body());
+    // echo "</pre>";
+    // exit;
 
-    $response = $dataController->parseResponse($response);
+     $dataController = new DataController();
 
-    $contracts = $dataController->convertToObject($response->body());
+     $response = $dataController->parseResponse($response);
 
-    return view('contract.contracts', ['contracts'=>$contracts]);
-}
+     $contracts = $dataController->convertToObject($response->body());
+
+     return view('contract.contracts', ['contracts'=>$contracts]);
+ }
 
 
-public function getContract($id)
-{
+ public function getContract($id)
+ {
     $contract = $this->buildContract($id);
 
     return view('contract.contract', ['contract'=>$contract]);
@@ -40,7 +45,7 @@ public function getContract($id)
 public function buildContract($id)
 {
     $response = Http::withHeaders([
-        'Cookie' => Cookie::get('acu_cookie'),
+        'Authorization' => 'Bearer '.Cookie::get('token'),
     ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines,Bills');
 
     $dataController = new DataController();
@@ -76,7 +81,7 @@ public function buildContract($id)
 public function getContractProject($projectID)
 {
     $response = Http::withHeaders([
-        'Cookie' => Cookie::get('acu_cookie'),
+        'Authorization' => 'Bearer '.Cookie::get('token'),
     ])->get(config('api.URL').'Subcontracts/20.200.001/Project/'.$projectID.'?$expand=Address,Addresses');
 
     $dataController = new DataController();
@@ -109,7 +114,7 @@ public function createInvoice(Request $request)
     }
 
     $response = Http::withHeaders([
-        'Cookie' => Cookie::get('acu_cookie'),
+        'Authorization' => 'Bearer '.Cookie::get('token'),
     ])
     ->withBody(json_encode($data),'application/json')
     ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$select=ReferenceNbr,Details/POOrderNbr,Details/POOrderNbr,Details/InventoryID,Details/Qty&$expand=Details');
@@ -132,16 +137,16 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-     $billed += $bill->BilledAmt;
-     }
+       $billed += $bill->BilledAmt;
+   }
 
-     if ($billed < $total) {
-        $contract->BillComplete = 0;
-    }else{
-       $contract->BillComplete = 1;
-    }
+   if ($billed < $total) {
+    $contract->BillComplete = 0;
+}else{
+ $contract->BillComplete = 1;
+}
 
-    return $contract;
+return $contract;
 }
 
 
@@ -195,9 +200,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
- if (is_object($value)) {
-     $parsed->$key = '';
- }
+   if (is_object($value)) {
+       $parsed->$key = '';
+   }
 }
 
 return $parsed;

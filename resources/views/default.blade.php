@@ -44,10 +44,10 @@
 						<a class="nav-link active" aria-current="page" href="{{URL::to('logout')}}">Logout</a>
 					</li>
 				</ul>
-				<form class="d-flex" role="search">
-					<input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
-					<button class="btn btn-outline-success" type="submit">Search</button>
-				</form>
+				<div class="d-flex">
+					{{Cookie::get('acu_cookie')}} - {{Cookie::get('full_name')}} - {{Cookie::get('account_name')}}
+				</div>
+				
 			</div>
 		</div>
 	</nav>
