@@ -12,30 +12,38 @@ use PDF;
 class ContractController extends Controller
 {
 
- public function getContracts()
- {
-     $response = Http::withHeaders([
+   public function getContracts()
+   {
+       $response = Http::withHeaders([
         'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract');
+    // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
+    ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
+
+       $dataController = new DataController();
+
+       $response = $dataController->parseResponse($response);
+
+       $contracts = $dataController->convertToObject($response->body());
+
+
+     // echo "<pre>";
+     // print_r($contracts);
+     // echo "</pre>";
+     // exit;
+
+
+       return view('contract.contracts', ['contracts'=>$contracts]);
+   }
+
+
+   public function getContract($id)
+   {
+    $contract = $this->buildContract($id);
 
     // echo "<pre>";
-    // print_r($response->body());
+    // print_r($contract);
     // echo "</pre>";
     // exit;
-
-     $dataController = new DataController();
-
-     $response = $dataController->parseResponse($response);
-
-     $contracts = $dataController->convertToObject($response->body());
-
-     return view('contract.contracts', ['contracts'=>$contracts]);
- }
-
-
- public function getContract($id)
- {
-    $contract = $this->buildContract($id);
 
     return view('contract.contract', ['contract'=>$contract]);
 }
@@ -46,7 +54,7 @@ public function buildContract($id)
 {
     $response = Http::withHeaders([
         'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines,Bills');
+    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines,Bills,ChangeOrders');
 
     $dataController = new DataController();
 
@@ -82,7 +90,7 @@ public function getContractProject($projectID)
 {
     $response = Http::withHeaders([
         'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])->get(config('api.URL').'Subcontracts/20.200.001/Project/'.$projectID.'?$expand=Address,Addresses');
+    ])->get(config('api.URL').'Subcontracts/20.200.001/Project/'.$projectID.'?$expand=Addresses');
 
     $dataController = new DataController();
 
@@ -99,7 +107,8 @@ public function createInvoice(Request $request)
     $data = [];
 
     $data['Vendor']['value'] = $request->input('vendor');
-    $data['VendorRef']['value'] = $request->input('vendorRef');
+    $data['VendorRef']['value'] = $request->input('vendref');
+    // $data['VendorRef']['value'] = 'oqsdoqs12hh445j';
     $data['Description']['value'] = $request->input('description');
     $data['Details'] = [];
 
@@ -110,6 +119,7 @@ public function createInvoice(Request $request)
         $newLine['POLine']['value'] = $line['line'];
         $newLine['UnitCost']['value'] = $line['amount'];
         $newLine['Qty']['value'] = 1;
+        $newLine['BranchID']['value'] = 'TBGROUP';
         $data['Details'][] = $newLine;
     }
 
@@ -117,7 +127,7 @@ public function createInvoice(Request $request)
         'Authorization' => 'Bearer '.Cookie::get('token'),
     ])
     ->withBody(json_encode($data),'application/json')
-    ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$select=ReferenceNbr,Details/POOrderNbr,Details/POOrderNbr,Details/InventoryID,Details/Qty&$expand=Details');
+    ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$expand=Details');
 
     // echo "<pre>";
     // print_r(json_decode($response->body()));
@@ -126,7 +136,7 @@ public function createInvoice(Request $request)
 
 
 
-    return back();
+    return back()->withSuccess('Invoice has been created');;
 }
 
 
@@ -137,13 +147,13 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-       $billed += $bill->BilledAmt;
-   }
+     $billed += $bill->BilledAmt;
+ }
 
-   if ($billed < $total) {
+ if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
- $contract->BillComplete = 1;
+   $contract->BillComplete = 1;
 }
 
 return $contract;
@@ -160,6 +170,56 @@ public function printContract($id)
   return $pdf->download('SGH Concepts - '.$contract->SubcontractNbr.' - '.$contract->Project->Description.'.pdf');
 
   // return view('contract.contract_pdf', ['contract'=>$contract]);
+}
+
+
+public function printInvoice($id)
+{
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
+    ])->get(config('api.URL').'Subcontracts/20.200.001/Bill/INV/'.$id.'?$expand=Details');
+
+    $dataController = new DataController();
+
+    $invoice = json_decode($dataController->convertToSingleObject($response->body()));
+
+
+    // echo "<pre>";
+    // print_r(json_decode($invoice));
+    // echo "</pre>";
+    // exit;
+
+
+    $pdf = PDF::loadView('contract.invoice_pdf',['invoice'=>$invoice])->setPaper('letter', 'portrait');
+
+    return $pdf->download('Invoice - '.$invoice->ReferenceNbr.'.pdf');
+
+    // return view('contract.invoice_pdf', ['invoice'=>$invoice]);
+}
+
+
+public function printCO($id)
+{
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
+    ])->get(config('api.URL').'Subcontracts/20.200.001/ChangeOrder/'.$id.'?$expand=Commitments');
+
+    $dataController = new DataController();
+
+    $co = json_decode($dataController->convertToSingleObject($response->body()));
+
+
+    // echo "<pre>";
+    // print_r($co);
+    // echo "</pre>";
+    // exit;
+
+
+    $pdf = PDF::loadView('contract.co_pdf',['co'=>$co])->setPaper('letter', 'portrait');
+
+    return $pdf->download('Change Order - '.$co->RefNbr.'.pdf');
+
+    // return view('contract.co_pdf', ['co'=>$co]);
 }
 
 
@@ -200,9 +260,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
-   if (is_object($value)) {
-       $parsed->$key = '';
-   }
+ if (is_object($value)) {
+     $parsed->$key = '';
+ }
 }
 
 return $parsed;

@@ -53,7 +53,11 @@
 			</tr>
 			<tr>
 				<td class="row-header"><strong>Project Manager</strong></td>
-				<td class="row-body">{{$contract->PM}}</td>
+				<td class="row-body">
+					@if (!empty($contract->PM))
+					{{$contract->PM}}
+					@endif
+				</td>
 			</tr>
 			<tr>
 				<td class="row-header"><strong>Notes</strong></td>
@@ -75,22 +79,6 @@
 				<tr>
 					<td class="row-header"><strong>GC</strong></td>
 					<td class="row-body">{{$contract->Project->GC}}</td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong></strong></td>
-					<td class="row-body"></td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong></strong></td>
-					<td class="row-body"></td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong></strong></td>
-					<td class="row-body"></td>
-				</tr>
-				<tr>
-					<td class="row-header"><strong></strong></td>
-					<td class="row-body"></td>
 				</tr>
 			</table>
 		</div>
@@ -132,6 +120,59 @@
 			</div>
 		</div>
 	</div>
+
+	<br>
+	<div class="row">
+		<div class="col-md">
+			<h3 class="section-color shadow-sm">Change Orders</h3>
+			<hr>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md">
+			<div class="table-responsive">
+				<table class="table table-striped table-bordered datatable">
+					<thead>
+						<th></th>
+						<th>Change Date</th>
+						<th>CO #</th>
+						<th>Status</th>
+						<th>Amount</th>
+						<th>CO Description</th>
+						<th>Line Description</th>
+						<th>Notes</th>
+					</thead>
+					@if(is_array($contract->ChangeOrders))
+					@foreach ($contract->ChangeOrders as $co)
+					<tr>
+						<td><a class="btn btn-info pdf" href="{{URL::to('co').'/pdf/'.$co->ReferenceNbr}}">Print</a></td>
+						<td>@date($co->ChangeDate)</td>
+						<td>{{$co->ReferenceNbr}}</td>
+						<td>{{$co->Status}}</td>
+						<td>@currency($co->Amount)</td>
+						<td>{{$co->DescriptionPMChangeOrder__Description}}</td>
+						<td>{{$co->DescriptionDescription}}</td>
+						<td>{{$co->note}}</td>
+					</tr>
+					@endforeach
+					@elseif($contract->ChangeOrders != null)
+					<tr>
+						<td><a class="btn btn-info pdf" href="{{URL::to('co').'/pdf/'.$contract->ChangeOrders->ReferenceNbr}}">Print</a></td>
+						<td>@date($contract->ChangeOrders->ChangeDate)</td>
+						<td>{{$contract->ChangeOrders->ReferenceNbr}}</td>
+						<td>{{$contract->ChangeOrders->Status}}</td>
+						<td>@currency($contract->ChangeOrders->Amount)</td>
+						<td>{{$contract->ChangeOrders->DescriptionPMChangeOrder__Description}}</td>
+						<td>{{$contract->ChangeOrders->DescriptionDescription}}</td>
+						<td>{{$contract->ChangeOrders->note}}</td>
+					</tr>
+					@endif
+				</table>
+			</div>
+		</div>
+	</div>
+
+
 	<br>
 	<div class="row">
 		<div class="col-md">
@@ -145,13 +186,15 @@
 	</div>
 	<br>
 	@endif
-	<div class="row">
+	<div class="row invoices">
 		<div class="col-md">
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered datatable">
 					<thead>
-						<th>Date</th>
-						<th>Ref Number</th>
+						<th></th>
+						<th>Invoice #</th>
+						<th>Invoice Date</th>
+						<th>Due Date</th>
 						<th>Status</th>
 						<th>Billed Amount</th>
 						<th>Notes</th>
@@ -159,8 +202,10 @@
 					@if(is_array($contract->Bills))
 					@foreach ($contract->Bills as $bill)
 					<tr>
-						<td>@date($bill->Date)</td>
+						<td><a class="btn btn-info pdf inv-line" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a></td>
 						<td>{{$bill->ReferenceNbr}}</td>
+						<td>@date($bill->Date)</td>
+						<td></td>
 						<td>{{$bill->Status}}</td>
 						<td>@currency($bill->BilledAmt)</td>
 						<td>{{$bill->note}}</td>
@@ -168,8 +213,10 @@
 					@endforeach
 					@elseif($contract->Bills != null)
 					<tr>
-						<td>@date($contract->Bills->Date)</td>
+						<td><a class="btn btn-info pdf inv-line" href="{{URL::to('invoice').'/pdf/'.$contract->Bills->ReferenceNbr}}">Print</a></td>
 						<td>{{$contract->Bills->ReferenceNbr}}</td>
+						<td>@date($contract->Bills->Date)</td>
+						<td></td>
 						<td>{{$contract->Bills->Status}}</td>
 						<td>@currency($contract->Bills->BilledAmt)</td>
 						<td>{{$contract->Bills->note}}</td>
@@ -207,6 +254,15 @@
 							@if ($errors->has('description'))
 							<div class="error">
 								{{ $errors->first('description') }}
+							</div>
+							@endif
+						</div>
+						<div class="form-group">
+							<label>Vendor Ref #</label>
+							<input type="text" class="form-control {{ $errors->has('vendref') ? 'error' : '' }}" name="vendref" id="vendref">
+							@if ($errors->has('vendref'))
+							<div class="error">
+								{{ $errors->first('vendref') }}
 							</div>
 							@endif
 						</div>
@@ -389,8 +445,11 @@
 			}
 		}
 
-
-
+		$( "#invoiceModal" ).on('shown.bs.modal', function(){
+			var count = $('.invoices .inv-line').length+1
+			var id = '{{$contract->SubcontractNbr}}';
+			$('#vendref').val(id.concat('-').concat(count));
+		});
 
 
 

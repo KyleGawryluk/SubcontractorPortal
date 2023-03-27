@@ -25,4 +25,6 @@ Route::get('/contract/{id}', [ContractController::class, 'getContract']);
 Route::get('/contract/pdf/{id}', [ContractController::class, 'printContract']);
 
 Route::post('/invoice', [ContractController::class, 'createInvoice']);
+Route::get('/invoice/pdf/{id}', [ContractController::class, 'printInvoice']);
 
+Route::get('/co/pdf/{id}', [ContractController::class, 'printCO']);

@@ -22,7 +22,7 @@
 					<th>Status</th>
 					<th>Vendor Ref</th>
 					<th>Contract Total</th>
-					<th>Unbilled Total</th>
+					{{-- <th>Unbilled Total</th> --}}
 					<th>Description</th>
 					<th>Project Manager</th>
 				</thead>
@@ -38,7 +38,7 @@
 						@endif
 					</td>
 					<td>@currency($contract->SubcontractTotal)</td>
-					<td>@currency($contract->UnbilledLineTotal)</td>
+					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
 					<td>{{$contract->Description}}</td>
 					<td>{{$contract->PM}}</td>
 				</tr>
