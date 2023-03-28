@@ -12,32 +12,47 @@ use PDF;
 class ContractController extends Controller
 {
 
-   public function getContracts()
-   {
-       $response = Http::withHeaders([
+ public function getContracts()
+ {
+     $response = Http::withHeaders([
         'Authorization' => 'Bearer '.Cookie::get('token'),
     // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
     ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
 
-       $dataController = new DataController();
+     $dataController = new DataController();
 
-       $response = $dataController->parseResponse($response);
+     $response = $dataController->parseResponse($response);
 
-       $contracts = $dataController->convertToObject($response->body());
+     $contracts = $dataController->convertToObject($response->body());
+
+     $open_contracts = new \stdClass();
+     $archived_contracts = new \stdClass();
+     $i = 0;
+
+     foreach ($contracts as $contract) {
+
+        if ($contract->SubcontractNbrStatus == 'N') {
+         $open_contracts->$i = $contract;
+     }else{
+        $archived_contracts->$i = $contract;
+    }
+
+    $i++;
+}
 
 
      // echo "<pre>";
-     // print_r($contracts);
+     // print_r($open_contracts);
      // echo "</pre>";
      // exit;
 
 
-       return view('contract.contracts', ['contracts'=>$contracts]);
-   }
+return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
+}
 
 
-   public function getContract($id)
-   {
+public function getContract($id)
+{
     $contract = $this->buildContract($id);
 
     // echo "<pre>";
@@ -110,7 +125,10 @@ public function createInvoice(Request $request)
     $data['VendorRef']['value'] = $request->input('vendref');
     // $data['VendorRef']['value'] = 'oqsdoqs12hh445j';
     $data['Description']['value'] = $request->input('description');
+    $data['Amount']['value'] = $request->input('totalAmount');
     $data['Details'] = [];
+
+
 
     foreach ($request->input('lines') as $line) {
         $newLine = [];
@@ -129,12 +147,31 @@ public function createInvoice(Request $request)
     ->withBody(json_encode($data),'application/json')
     ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$expand=Details');
 
+    $invoice = json_decode($response->body());
+
     // echo "<pre>";
     // print_r(json_decode($response->body()));
     // echo "</pre>";
     // exit;
 
 
+    $inv_data = ['entity'];
+
+    // $inv_data['entity']['RefNbr'] = $invoice->ReferenceNbr->value;
+    // $inv_data['entity']['DocType'] = 'INV';
+    $inv_data['entity']['id'] = $invoice->id;
+
+    $action = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
+    ])
+    ->withBody(json_encode($inv_data),'application/json')
+    ->post(config('api.URL').'Subcontracts/20.200.001/Bill/ReleaseFromHold');
+
+
+    // echo "<pre>";
+    // print_r(json_decode($action->body()));
+    // echo "</pre>";
+    // exit;
 
     return back()->withSuccess('Invoice has been created');;
 }
@@ -147,13 +184,13 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-     $billed += $bill->BilledAmt;
- }
+       $billed += $bill->BilledAmt;
+   }
 
- if ($billed < $total) {
+   if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
-   $contract->BillComplete = 1;
+ $contract->BillComplete = 1;
 }
 
 return $contract;
@@ -260,9 +297,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
- if (is_object($value)) {
-     $parsed->$key = '';
- }
+   if (is_object($value)) {
+       $parsed->$key = '';
+   }
 }
 
 return $parsed;

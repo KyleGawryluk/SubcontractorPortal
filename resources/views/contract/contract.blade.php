@@ -246,7 +246,8 @@
 						@else
 						<input type="hidden" name="vendorRef" id="vendorRef" value="{{$contract->VendorRef}}">	
 						@endif
-						
+
+						<input type="hidden" name="totalAmount" id="totalAmount">
 
 						<div class="form-group">
 							<label>Description</label>
@@ -303,7 +304,7 @@
 								</td>
 								<td>
 									<div class="form-group">
-										<input type="test" data-type="amount" value="0"  line-nbr="{{$detail->LineNbr}}" value="" data-type="currency"  class="form-control {{ $errors->has('amount'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][amount]" id="amount{{$detail->LineNbr}}">
+										<input type="test" data-type="amount" value="0"  line-nbr="{{$detail->LineNbr}}" value="" data-type="currency"  class="form-control inv_amount {{ $errors->has('amount'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][amount]" id="amount{{$detail->LineNbr}}">
 										@if ($errors->has('amount'.$detail->LineNbr))
 										<div class="error">
 											{{ $errors->first('amount'.$detail->LineNbr) }}
@@ -332,11 +333,13 @@
 	<script>
 		$("input[data-type='percent']").on('keyup change', function() {
 			calcPercent($(this));
+			calcTotal();
 		});
 
 
 		$("input[data-type='amount']").on('keyup change', function() {
 			calcAmount($(this));
+			calcTotal();
 		});
 
 
@@ -450,6 +453,16 @@
 			var id = '{{$contract->SubcontractNbr}}';
 			$('#vendref').val(id.concat('-').concat(count));
 		});
+
+		function calcTotal() {
+			var amount = 0;
+
+			$(".inv_amount").each(function(){
+				amount += +$(this).val();
+			});
+
+			$('#totalAmount').val(+amount);
+		}
 
 
 
