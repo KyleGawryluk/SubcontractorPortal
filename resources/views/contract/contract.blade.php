@@ -10,11 +10,19 @@
 
 @section('content')
 
+@if ($contract->Accepted == 1)
 <div class="row action-bar">
 	<div class="col-md-12">
 		<a class="btn btn-warning pdf" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
 	</div>
 </div>
+@else
+<div class="row action-bar">
+	<div class="col-md-12">
+		<button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal">Accept Purchase Order</button>
+	</div>
+</div>
+@endif
 
 <div class="row">
 	<h3 class="section-color shadow-sm">{{$contract->Project->Description}}</h3>
@@ -133,7 +141,9 @@
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered datatable">
 					<thead>
+						@if ($contract->Accepted == 1)
 						<th></th>
+						@endif
 						<th>Change Date</th>
 						<th>CO #</th>
 						<th>Status</th>
@@ -145,7 +155,9 @@
 					@if(is_array($contract->ChangeOrders))
 					@foreach ($contract->ChangeOrders as $co)
 					<tr>
+						@if ($contract->Accepted == 1)
 						<td><a class="btn btn-info pdf" href="{{URL::to('co').'/pdf/'.$co->ReferenceNbr}}">Print</a></td>
+						@endif
 						<td>@date($co->ChangeDate)</td>
 						<td>{{$co->ReferenceNbr}}</td>
 						<td>{{$co->Status}}</td>
@@ -157,7 +169,9 @@
 					@endforeach
 					@elseif($contract->ChangeOrders != null)
 					<tr>
+						@if ($contract->Accepted == 1)
 						<td><a class="btn btn-info pdf" href="{{URL::to('co').'/pdf/'.$contract->ChangeOrders->ReferenceNbr}}">Print</a></td>
+						@endif
 						<td>@date($contract->ChangeOrders->ChangeDate)</td>
 						<td>{{$contract->ChangeOrders->ReferenceNbr}}</td>
 						<td>{{$contract->ChangeOrders->Status}}</td>
@@ -180,7 +194,10 @@
 			<hr>
 		</div>
 	</div>
-	@if ($contract->Status == 'Open' && $contract->BillComplete == 0)
+
+
+
+	@if ($contract->Status == 'Open' && $contract->BillComplete == 0 && $contract->Accepted == 1)
 	<div class="row">
 		<div class="col-md-12"><button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#invoiceModal">Create Invoice</button></div>
 	</div>
@@ -191,7 +208,9 @@
 			<div class="table-responsive">
 				<table class="table table-striped table-bordered datatable">
 					<thead>
+						@if ($contract->Accepted == 1)
 						<th></th>
+						@endif
 						<th>Invoice #</th>
 						<th>Invoice Date</th>
 						<th>Due Date</th>
@@ -202,7 +221,9 @@
 					@if(is_array($contract->Bills))
 					@foreach ($contract->Bills as $bill)
 					<tr>
+						@if ($contract->Accepted == 1)
 						<td><a class="btn btn-info pdf inv-line" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a></td>
+						@endif
 						<td>{{$bill->ReferenceNbr}}</td>
 						<td>@date($bill->Date)</td>
 						<td></td>
@@ -213,7 +234,9 @@
 					@endforeach
 					@elseif($contract->Bills != null)
 					<tr>
+						@if ($contract->Accepted == 1)
 						<td><a class="btn btn-info pdf inv-line" href="{{URL::to('invoice').'/pdf/'.$contract->Bills->ReferenceNbr}}">Print</a></td>
+						@endif
 						<td>{{$contract->Bills->ReferenceNbr}}</td>
 						<td>@date($contract->Bills->Date)</td>
 						<td></td>
@@ -326,11 +349,58 @@
 		</div>
 	</div>
 
+	<div class="modal fade modal-lg" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content alert alert-warning">
+				<div class="modal-header alert alert-warning">
+					<p>
+						By accepting this Purchase Order, I agree to the terms and conditions outlined for the 
+						project indicated here, and project specific certifications or testing, as well as those in 
+						the SGH Redglaze Subcontractor Agreement.
+					</p>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body alert alert-warning">
+					<form action="/accept" method="post" >
+						@csrf
+						<div class="form-check">
+
+						</div>
+						<div class="mb-3">
+							<label for="acceptedName" class="form-label">Accepted By</label>
+							<input type="text" class="form-control" id="acceptedName">
+						</div>
+						<div class="mb-3">
+							<label for="acceptedDate" class="form-label">Accepted Date</label>
+							<input type="text" class="form-control" id="acceptedDate" value="@date(date(now()))" readonly>
+						</div>
+						<button class="btn btn-success" type="submit">Accept Purchase Order</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
 	@stop
 
 	@section('scripts')
 
 	<script>
+
+		$( document ).ready(function() {
+			var accepted = {{$contract->Accepted}}
+
+			var acceptModal = new bootstrap.Modal(document.getElementById('acceptModal'))
+
+			if(accepted == 0){
+				acceptModal.show();
+			}
+
+		});
+
 		$("input[data-type='percent']").on('keyup change', function() {
 			calcPercent($(this));
 			calcTotal();

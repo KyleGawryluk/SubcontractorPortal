@@ -92,6 +92,8 @@ public function buildContract($id)
 
     $contract = $this->checkBilling($contract);
 
+    $contract->Accepted = 0;
+
     // echo "<pre>";
     // print_r($contract);
     // echo "</pre>";
