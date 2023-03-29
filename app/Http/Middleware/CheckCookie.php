@@ -19,7 +19,7 @@ class CheckCookie
     {
          if (Cookie::get('token') == null) {
 
-            return redirect('/logout')->withErrors('Your session has expired, please login again.');
+            return redirect('/logout')->withErrors(['msg' =>'Your session has expired, please login again.']);
         }
 
         return $next($request);
