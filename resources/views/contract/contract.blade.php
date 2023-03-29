@@ -361,18 +361,18 @@
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
 				<div class="modal-body alert alert-warning">
-					<form action="/accept" method="post" >
+					<form action="/contract/accept" method="post" >
 						@csrf
 						<div class="form-check">
 
 						</div>
 						<div class="mb-3">
 							<label for="acceptedName" class="form-label">Accepted By</label>
-							<input type="text" class="form-control" id="acceptedName">
+							<input type="text" class="form-control" name="acceptedName" id="acceptedName">
 						</div>
 						<div class="mb-3">
 							<label for="acceptedDate" class="form-label">Accepted Date</label>
-							<input type="text" class="form-control" id="acceptedDate" value="@date(date(now()))" readonly>
+							<input type="text" class="form-control" name="acceptedDate" id="acceptedDate" value="@date(date(now()))" readonly>
 						</div>
 						<button class="btn btn-success" type="submit">Accept Purchase Order</button>
 					</form>
@@ -395,9 +395,9 @@
 
 			var acceptModal = new bootstrap.Modal(document.getElementById('acceptModal'))
 
-			if(accepted == 0){
-				acceptModal.show();
-			}
+			// if(accepted == 0){
+			// 	acceptModal.show();
+			// }
 
 		});
 

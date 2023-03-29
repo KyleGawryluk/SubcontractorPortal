@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ContractController;
+use App\Http\Middleware\CheckCookie;
 
 /*
 |--------------------------------------------------------------------------
@@ -20,11 +21,19 @@ Route::get('/', [HomeController::class, 'index']);
 Route::post('/login', [HomeController::class, 'login']);
 Route::get('/logout', [HomeController::class, 'logout']);
 
-Route::get('/contracts', [ContractController::class, 'getContracts']);
-Route::get('/contract/{id}', [ContractController::class, 'getContract']);
-Route::get('/contract/pdf/{id}', [ContractController::class, 'printContract']);
+Route::controller(ContractController::class)->middleware('cookie')->group(function () {
 
-Route::post('/invoice', [ContractController::class, 'createInvoice']);
-Route::get('/invoice/pdf/{id}', [ContractController::class, 'printInvoice']);
+	Route::get('/contracts','getContracts');
+	Route::get('/contract/{id}','getContract');
+	Route::get('/contract/pdf/{id}','printContract');
+	Route::post('/contract/accept','acceptContract');
 
-Route::get('/co/pdf/{id}', [ContractController::class, 'printCO']);
+	Route::post('/invoice','createInvoice');
+	Route::get('/invoice/pdf/{id}','printInvoice');
+
+	Route::get('/co/pdf/{id}','printCO');
+
+});
+
+
+

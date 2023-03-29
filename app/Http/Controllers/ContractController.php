@@ -12,33 +12,33 @@ use PDF;
 class ContractController extends Controller
 {
 
- public function getContracts()
- {
-     $response = Http::withHeaders([
-        'Authorization' => 'Bearer '.Cookie::get('token'),
+    public function getContracts()
+    {
+        $response = Http::withHeaders([
+            'Authorization' => 'Bearer '.Cookie::get('token'),
     // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
-    ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
+        ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
 
-     $dataController = new DataController();
+        $dataController = new DataController();
 
-     $response = $dataController->parseResponse($response);
+        $response = $dataController->parseResponse($response);
 
-     $contracts = $dataController->convertToObject($response->body());
+        $contracts = $dataController->convertToObject($response->body());
 
-     $open_contracts = new \stdClass();
-     $archived_contracts = new \stdClass();
-     $i = 0;
+        $open_contracts = new \stdClass();
+        $archived_contracts = new \stdClass();
+        $i = 0;
 
-     foreach ($contracts as $contract) {
+        foreach ($contracts as $contract) {
 
-        if ($contract->SubcontractNbrStatus == 'N') {
-         $open_contracts->$i = $contract;
-     }else{
-        $archived_contracts->$i = $contract;
+            if ($contract->SubcontractNbrStatus == 'N') {
+               $open_contracts->$i = $contract;
+           }else{
+            $archived_contracts->$i = $contract;
+        }
+
+        $i++;
     }
-
-    $i++;
-}
 
 
      // echo "<pre>";
@@ -47,7 +47,7 @@ class ContractController extends Controller
      // exit;
 
 
-return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
+    return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
 }
 
 
@@ -92,7 +92,7 @@ public function buildContract($id)
 
     $contract = $this->checkBilling($contract);
 
-    $contract->Accepted = 0;
+    $contract->Accepted = 1;
 
     // echo "<pre>";
     // print_r($contract);
@@ -116,6 +116,17 @@ public function getContractProject($projectID)
     $project = $dataController->convertToSingleObject($response->body());
 
     return $project;
+}
+
+
+public function acceptContract(Request $request)
+{
+    // echo "<pre>";
+    // print_r($request->all());
+    // echo "</pre>";
+    // exit;
+
+    return back()->withSuccess('Contract has been Accepted');
 }
 
 
@@ -175,7 +186,7 @@ public function createInvoice(Request $request)
     // echo "</pre>";
     // exit;
 
-    return back()->withSuccess('Invoice has been created');;
+    return back()->withSuccess('Invoice has been created');
 }
 
 
@@ -186,13 +197,13 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-       $billed += $bill->BilledAmt;
-   }
+     $billed += $bill->BilledAmt;
+ }
 
-   if ($billed < $total) {
+ if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
- $contract->BillComplete = 1;
+   $contract->BillComplete = 1;
 }
 
 return $contract;
@@ -299,9 +310,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
-   if (is_object($value)) {
-       $parsed->$key = '';
-   }
+ if (is_object($value)) {
+     $parsed->$key = '';
+ }
 }
 
 return $parsed;

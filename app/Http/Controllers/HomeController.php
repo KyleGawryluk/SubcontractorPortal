@@ -53,8 +53,8 @@ class HomeController extends Controller
          // echo "</pre>";
          // exit;
 
-           Cookie::queue('oauth', $response->body(), 60);
-           Cookie::queue('token', $body->access_token, 60);
+           Cookie::queue('oauth', $response->body(), 5);
+           Cookie::queue('token', $body->access_token, 5);
 
            $userinforeq = Http::withHeaders(['Authorization' => 'Bearer '.Cookie::get('token'),])
            ->withBody(json_encode(['Username' => ['value'=>$request->input('username') ]]), 'application/json')
@@ -75,11 +75,11 @@ class HomeController extends Controller
          // Cookie::queue('account_name',$userinfo->AccountName->value, 60);
 
 
-           Cookie::queue('first_name','Kyle', 60);
-           Cookie::queue('last_name','Gawryluk', 60);
-           Cookie::queue('full_name','Kyle Gawryluk', 60);
-           Cookie::queue('account_id','SGHREDGLAZ', 60);
-           Cookie::queue('account_name','SGH Redglaze', 60);
+           Cookie::queue('first_name','Kyle', 5);
+           Cookie::queue('last_name','Gawryluk', 5);
+           Cookie::queue('full_name','Kyle Gawryluk', 5);
+           Cookie::queue('account_id','SGHREDGLAZ', 5);
+           Cookie::queue('account_name','SGH Redglaze', 5);
 
            // Cookie::queue('userinfo',json_encode($userinfo), 60);
 
