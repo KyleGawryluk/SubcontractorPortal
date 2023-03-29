@@ -197,16 +197,18 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-     $billed += $bill->BilledAmt;
- }
+         if ($bill->Status != 'Rejected') {
+            $billed += $bill->BilledAmt;
+        }
+    }
 
- if ($billed < $total) {
-    $contract->BillComplete = 0;
-}else{
-   $contract->BillComplete = 1;
-}
+    if ($billed < $total) {
+        $contract->BillComplete = 0;
+    }else{
+       $contract->BillComplete = 1;
+    }
 
-return $contract;
+    return $contract;
 }
 
 

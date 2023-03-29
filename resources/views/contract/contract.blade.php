@@ -60,10 +60,10 @@
 				<td class="row-body">{{$contract->Description}}</td>
 			</tr>
 			<tr>
-				<td class="row-header"><strong>Project Manager</strong></td>
+				<td class="row-header"><strong>Installation Manager</strong></td>
 				<td class="row-body">
-					@if (!empty($contract->PM))
-					{{$contract->PM}}
+					@if (!empty($contract->Project->InstallationManager))
+					{{$contract->Project->InstallationManager}}
 					@endif
 				</td>
 			</tr>
@@ -87,6 +87,18 @@
 				<tr>
 					<td class="row-header"><strong>GC</strong></td>
 					<td class="row-body">{{$contract->Project->GC}}</td>
+				</tr>
+				<tr>
+					<td class="row-header"><strong>Job Requirements</strong></td>
+					<td class="row-body">
+						<ul>
+							<li>Background Check</li>
+							<li>CCIP/OCIP</li>
+							<li>Id Badges</li>
+							<li>OSHA 30</li>
+							<li>Updated Hardhats</li>
+						</ul>
+					</td>
 				</tr>
 			</table>
 		</div>

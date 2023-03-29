@@ -18,21 +18,21 @@
 			<table class="table table-striped table-bordered datatable">
 				<thead class="table-light">
 					<th>Order #</th>
-					<th>Start Date</th>
-					<th>Status</th>
-					<th>Vendor Ref</th>
+					<th class="d-none d-lg-table-cell">Start Date</th>
+					<th class="d-none d-lg-table-cell">Status</th>
+					<th class="d-none d-lg-table-cell">Vendor Ref</th>
 					<th>Contract Total</th>
 					{{-- <th>Unbilled Total</th> --}}
 					<th>Description</th>
-					<th>Project Manager</th>
+					<th class="d-none d-lg-table-cell">Project Manager</th>
 				</thead>
 
 				@foreach($open_contracts as $o_contract)
 				<tr>
 					<td><a href="{{URL::to('contract').'/'.$o_contract->SubcontractNbr}}" target="_blank">{{$o_contract->SubcontractNbr}}</a></td>
-					<td>@date($o_contract->StartDate)</td>
-					<td>{{$o_contract->Status}}</td>
-					<td>
+					<td class="d-none d-lg-table-cell">@date($o_contract->StartDate)</td>
+					<td class="d-none d-lg-table-cell">{{$o_contract->Status}}</td>
+					<td class="d-none d-lg-table-cell">
 						@if (!empty($o_contract->VendorRef))
 						{{$o_contract->VendorRef}}
 						@endif
@@ -40,7 +40,7 @@
 					<td>@currency($o_contract->SubcontractTotal)</td>
 					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
 					<td>{{$o_contract->Description}}</td>
-					<td>{{$o_contract->PM}}</td>
+					<td class="d-none d-lg-table-cell">{{$o_contract->PM}}</td>
 				</tr>
 				@endforeach
 
@@ -58,21 +58,21 @@
 			<table class="table table-striped table-bordered datatable">
 				<thead class="table-light">
 					<th>Order #</th>
-					<th>Start Date</th>
-					<th>Status</th>
-					<th>Vendor Ref</th>
+					<th class="d-none d-lg-table-cell">Start Date</th>
+					<th class="d-none d-lg-table-cell">Status</th>
+					<th class="d-none d-lg-table-cell">Vendor Ref</th>
 					<th>Contract Total</th>
 					{{-- <th>Unbilled Total</th> --}}
 					<th>Description</th>
-					<th>Project Manager</th>
+					<th class="d-none d-lg-table-cell">Project Manager</th>
 				</thead>
 
 				@foreach($archived_contracts as $contract)
 				<tr>
 					<td><a href="{{URL::to('contract').'/'.$contract->SubcontractNbr}}" target="_blank">{{$contract->SubcontractNbr}}</a></td>
-					<td>@date($contract->StartDate)</td>
-					<td>{{$contract->Status}}</td>
-					<td>
+					<td class="d-none d-lg-table-cell">@date($contract->StartDate)</td>
+					<td class="d-none d-lg-table-cell">{{$contract->Status}}</td>
+					<td class="d-none d-lg-table-cell">
 						@if (!empty($contract->VendorRef))
 						{{$contract->VendorRef}}
 						@endif
@@ -80,7 +80,7 @@
 					<td>@currency($contract->SubcontractTotal)</td>
 					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
 					<td>{{$contract->Description}}</td>
-					<td>{{$contract->PM}}</td>
+					<td class="d-none d-lg-table-cell">{{$contract->PM}}</td>
 				</tr>
 				@endforeach
 
