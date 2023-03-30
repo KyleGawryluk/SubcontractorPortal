@@ -69,7 +69,22 @@ hr {
 <body>
     <table>
         <tr>
-            <td><img src="{{ asset('img/SGH_Concepts_Header.png') }}" alt="SGH_Concepts_Header.png" width="400px"></td>
+            <td>
+                <table>
+                    <tr>
+                        <td><img src="{{ asset('img/SGH_Concepts_Header.png') }}" alt="SGH_Concepts_Header.png" width="400px"></td>
+                    </tr>
+                    <tr>
+                        <td><hr></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Accepted by:</strong> </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Accepted Date:</strong> </td>
+                    </tr>
+                </table>
+            </td>
             <td>
                 <table>
                     <tr>
@@ -107,15 +122,17 @@ hr {
                   <tr>
                       <td class="td5">FROM:</td>
                       <td class="td45">
-                        {{$contract->Project->InstallationManager}} <br>
-                        SGH Concepts <br>
-                        742 N 109th Court <br>
-                        Omaha, NE 68154
-                    </td>
-                </tr>
-            </table>
-        </td>
-        <td class="td50">
+                       @if (!empty($contract->Project->InstallationManager)) <br>
+                       {{$contract->Project->InstallationManager}}
+                       @endif
+                       SGH Concepts <br>
+                       742 N 109th Court <br>
+                       Omaha, NE 68154
+                   </td>
+               </tr>
+           </table>
+       </td>
+       <td class="td50">
           <table>
               <tr>
                   <td class="td5">PROJECT:</td>
@@ -192,7 +209,9 @@ hr {
     <tr>
         <td>
             Signed:__________________________________________ <br>
+            @if (!empty($contract->Project->InstallationManager)) <br>
             {{$contract->Project->InstallationManager}}
+            @endif
         </td>
         <td>
             <table>

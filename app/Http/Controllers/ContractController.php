@@ -16,8 +16,8 @@ class ContractController extends Controller
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.Cookie::get('token'),
-    // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
-        ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
+    ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
+        // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
 
         $dataController = new DataController();
 
