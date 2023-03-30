@@ -62,7 +62,7 @@ td, th{
 }
 
 hr {
-  border-top: 1px solid #2E2E2E;
+  border-top: 1px solid #2E2E2E;!important
 }
 
 </style>
