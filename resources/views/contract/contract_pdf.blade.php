@@ -150,7 +150,9 @@ hr {
       <table>
           <tr>
             <td class="td5">TO:</td>
-            <td class="td45"></td>
+            <td class="td45">
+                {{Cookie::get('account_name')}} <br>
+            </td>
         </tr>
     </table>
 </td>
