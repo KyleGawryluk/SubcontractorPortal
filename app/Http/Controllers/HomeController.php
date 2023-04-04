@@ -38,6 +38,11 @@ class HomeController extends Controller
 
         $body = json_decode($response->body());
 
+            // echo "<pre>";
+    // print_r($contract);
+    // echo "</pre>";
+    // exit;
+
         Cookie::queue('oauth', $response->body(), 60);
         Cookie::queue('token', $body->access_token, 60);
         Cookie::queue('username', $request->input('username'), 60);
@@ -47,6 +52,13 @@ class HomeController extends Controller
         ->put(config('api.URL').'Subcontracts/20.200.001/UserInfo?$expand=UserInfoDetails');
 
         $userinfo = json_decode($userinforeq->body());
+
+
+        //         echo "<pre>";
+        // print_r($userinfo);
+        // echo "</pre>";
+        // exit;
+        
         $userinfo = $userinfo->UserInfoDetails[0];
 
         Cookie::queue('first_name',$userinfo->FirstName->value, 60);

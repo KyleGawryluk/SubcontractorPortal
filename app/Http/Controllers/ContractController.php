@@ -16,12 +16,18 @@ class ContractController extends Controller
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
+        ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
         // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
 
         $dataController = new DataController();
 
         $response = $dataController->parseResponse($response);
+
+        // echo "<pre>";
+        // print_r(json_decode($response->body()));
+        // echo "</pre>";
+        // exit;
+
 
         $contracts = $dataController->convertToObject($response->body());
 
@@ -92,14 +98,22 @@ public function buildContract($id)
 
     $contract = $this->checkBilling($contract);
 
-    $contract->Accepted = 1;
+ //    if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
+ //     $contract->Accepted = 0;
+ // }else{
+ //     $contract->Accepted = 1; 
+ // }
+
+    $contract->Accepted = 1; 
+
+
 
     // echo "<pre>";
     // print_r($contract);
     // echo "</pre>";
     // exit;
 
-    return $contract;
+ return $contract;
 }
 
 
@@ -113,6 +127,12 @@ public function getContractProject($projectID)
 
     $response = $dataController->parseResponse($response);
 
+    // echo "<pre>";
+    // print_r($response->body());
+    // echo "</pre>";
+    // exit;
+
+
     $project = $dataController->convertToSingleObject($response->body());
 
     return $project;
@@ -125,6 +145,30 @@ public function acceptContract(Request $request)
     // print_r($request->all());
     // echo "</pre>";
     // exit;
+
+    // $data = [];
+
+    // $data['UsrAccepted']['value'] = true;
+    // $data['UsrAcceptedBy']['value'] = $request->input('acceptedName');
+    // $data['UsrAcceptedDate']['value'] = $request->input('acceptedDate');
+
+    // // $data['POOrderType']['value'] = 'Subcontract';
+    // // $data['POOrderNbr']['value'] = $request->input('id');
+
+    // $response = Http::withHeaders([
+    //     'Authorization' => 'Bearer '.Cookie::get('token'),
+    // ])
+    // ->withBody(json_encode($data),'application/json')
+    // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract/RS/".$request->input('id')."?\$expand=Other");
+    // // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=OrderType eq 'Subcontract' and OrderType eq '".$request->input('id')."'\$expand=Other");
+
+    // echo "<pre>";
+    // print_r(config('api.URL')."Subcontracts/20.200.001/Subcontract/RS/".$request->input('id')."?\$expand=Other");
+    // echo "<br";
+    // print_r(json_decode($response->body()));
+    // echo "</pre>";
+    // exit;
+
 
     return back()->withSuccess('Contract has been Accepted');
 }
@@ -197,18 +241,18 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-         if ($bill->Status != 'Rejected') {
-            $billed += $bill->BilledAmt;
-        }
+     if ($bill->Status != 'Rejected') {
+        $billed += $bill->BilledAmt;
     }
+}
 
-    if ($billed < $total) {
-        $contract->BillComplete = 0;
-    }else{
-       $contract->BillComplete = 1;
-    }
+if ($billed < $total) {
+    $contract->BillComplete = 0;
+}else{
+   $contract->BillComplete = 1;
+}
 
-    return $contract;
+return $contract;
 }
 
 

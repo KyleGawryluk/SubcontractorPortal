@@ -57,7 +57,11 @@
 			</tr>
 			<tr>
 				<td class="row-header"><strong>Description</strong></td>
-				<td class="row-body">{{$contract->Description}}</td>
+				<td class="row-body">
+					@if (!empty($contract->Description))
+					{{$contract->Description}}
+					@endif
+				</td>
 			</tr>
 			<tr>
 				<td class="row-header"><strong>Installation Manager</strong></td>
@@ -92,11 +96,28 @@
 					<td class="row-header"><strong>Job Requirements</strong></td>
 					<td class="row-body">
 						<ul>
-							<li>Background Check</li>
-							<li>CCIP/OCIP</li>
-							<li>Id Badges</li>
+							@if(!is_array($contract->CCIP) && $contract->CCIP == 1)
+							<li>CCIP</li>
+							@endif
+							@if(!is_array($contract->CertifiedPayroll) && $contract->CertifiedPayroll == 1)
+							<li>Certified Payroll</li>
+							@endif
+							@if(!is_array($contract->DrugTest) && $contract->DrugTest == 1)
+							<li>Drug Test</li>
+							@endif
+							@if(!is_array($contract->IDBadges) && $contract->IDBadges == 1)
+							<li>ID Badges</li>
+							@endif
+							@if(!is_array($contract->OSHA30) && $contract->OSHA30 == 1)
 							<li>OSHA 30</li>
-							<li>Updated Hardhats</li>
+							@endif
+							@if(!is_array($contract->SafetyMeetingsonJobsite) && $contract->SafetyMeetingsonJobsite == 1)
+							<li>Safety Meetings on Jobsite</li>
+							@endif
+							@if(!is_array($contract->OtherRequirements))
+							<li>{{$contract->OtherRequirements}}</li>
+							@endif
+
 						</ul>
 					</td>
 				</tr>
@@ -375,9 +396,7 @@
 				<div class="modal-body alert alert-warning">
 					<form action="/contract/accept" method="post" >
 						@csrf
-						<div class="form-check">
-
-						</div>
+							<input type="hidden" name="id" value="{{$contract->SubcontractNbr}}">
 						<div class="mb-3">
 							<label for="acceptedName" class="form-label">Accepted By</label>
 							<input type="text" class="form-control" name="acceptedName" id="acceptedName">

@@ -39,7 +39,11 @@
 					</td>
 					<td>@currency($o_contract->SubcontractTotal)</td>
 					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
-					<td>{{$o_contract->Description}}</td>
+					<td>
+					@if (!empty($o_contract->Description))
+						{{$o_contract->Description}}
+						@endif
+					</td>
 					<td class="d-none d-lg-table-cell">{{$o_contract->PM}}</td>
 				</tr>
 				@endforeach
@@ -79,7 +83,11 @@
 					</td>
 					<td>@currency($contract->SubcontractTotal)</td>
 					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
-					<td>{{$contract->Description}}</td>
+					<td>
+										@if (!empty($contract->Description))
+						{{$contract->Description}}
+						@endif
+					</td>
 					<td class="d-none d-lg-table-cell">{{$contract->PM}}</td>
 				</tr>
 				@endforeach
