@@ -22,7 +22,7 @@
 					<th class="d-none d-lg-table-cell">Status</th>
 					<th class="d-none d-lg-table-cell">Vendor Ref</th>
 					<th>Contract Total</th>
-					{{-- <th>Unbilled Total</th> --}}
+					<th>Unbilled Total</th>
 					<th>Description</th>
 					<th class="d-none d-lg-table-cell">Installation Manager</th>
 				</thead>
@@ -38,7 +38,7 @@
 						@endif
 					</td>
 					<td>@currency($o_contract->SubcontractTotal)</td>
-					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
+					<td>@currency($o_contract->UnbilledLineTotal)</td>
 					<td>
 					@if (!empty($o_contract->Description))
 						{{$o_contract->Description}}
@@ -66,7 +66,7 @@
 					<th class="d-none d-lg-table-cell">Status</th>
 					<th class="d-none d-lg-table-cell">Vendor Ref</th>
 					<th>Contract Total</th>
-					{{-- <th>Unbilled Total</th> --}}
+					<th>Unbilled Total</th>
 					<th>Description</th>
 					<th class="d-none d-lg-table-cell">Installation Manager</th>
 				</thead>
@@ -82,7 +82,7 @@
 						@endif
 					</td>
 					<td>@currency($contract->SubcontractTotal)</td>
-					{{-- <td>@currency($contract->UnbilledLineTotal)</td> --}}
+					<td>@currency($contract->UnbilledLineTotal)</td>
 					<td>
 										@if (!empty($contract->Description))
 						{{$contract->Description}}

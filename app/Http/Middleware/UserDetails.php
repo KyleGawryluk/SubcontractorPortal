@@ -26,12 +26,6 @@ class UserDetails
 
         $userinfo = json_decode($userinforeq->body());
 
-
-        //         echo "<pre>";
-        // print_r($userinfo);
-        // echo "</pre>";
-        // exit;
-        
         $userinfo = $userinfo->UserInfoDetails[0];
 
         Cookie::queue('first_name',$userinfo->FirstName->value, 60);

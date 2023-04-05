@@ -98,13 +98,13 @@ public function buildContract($id)
 
     $contract = $this->checkBilling($contract);
 
- //    if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
- //     $contract->Accepted = 0;
- // }else{
- //     $contract->Accepted = 1; 
- // }
+    if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
+     $contract->Accepted = 0;
+ }else{
+     $contract->Accepted = 1; 
+ }
 
-    $contract->Accepted = 1; 
+    // $contract->Accepted = 1; 
 
 
 
@@ -141,36 +141,28 @@ public function getContractProject($projectID)
 
 public function acceptContract(Request $request)
 {
-    // echo "<pre>";
-    // print_r($request->all());
-    // echo "</pre>";
-    // exit;
+    $data = [];
+    $data['id'] = $request->input('id');
+    $data['SubcontractNbr']['value'] = $request->input('nbr');
+    $data['Accepted']['value'] = 1;
+    $data['AcceptedBy']['value'] = $request->input('acceptedName');
+    $data['AcceptedDate']['value'] = date("Y-m-d H:i:s",strtotime($request->input('acceptedDate')));
 
-    // $data = [];
-
-    // $data['UsrAccepted']['value'] = true;
-    // $data['UsrAcceptedBy']['value'] = $request->input('acceptedName');
-    // $data['UsrAcceptedDate']['value'] = $request->input('acceptedDate');
-
-    // // $data['POOrderType']['value'] = 'Subcontract';
-    // // $data['POOrderNbr']['value'] = $request->input('id');
-
-    // $response = Http::withHeaders([
-    //     'Authorization' => 'Bearer '.Cookie::get('token'),
-    // ])
-    // ->withBody(json_encode($data),'application/json')
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
+    ])
+    ->withBody(json_encode($data),'application/json')
+    ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract");
     // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract/RS/".$request->input('id')."?\$expand=Other");
-    // // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=OrderType eq 'Subcontract' and OrderType eq '".$request->input('id')."'\$expand=Other");
+    // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=OrderType eq 'Subcontract' and OrderType eq '".$request->input('id')."'\$expand=Other");
 
     // echo "<pre>";
-    // print_r(config('api.URL')."Subcontracts/20.200.001/Subcontract/RS/".$request->input('id')."?\$expand=Other");
-    // echo "<br";
     // print_r(json_decode($response->body()));
     // echo "</pre>";
     // exit;
 
 
-    return back()->withSuccess('Contract has been Accepted');
+    return back()->withSuccess(['msg'=>'Contract has been Accepted']);
 }
 
 

@@ -24,13 +24,13 @@ class HomeController extends Controller
 
         $response = Http::asForm()->withHeaders(['Content-Type' => 'application/x-www-form-urlencoded'])
         ->post(config('api.INSTANCE').'identity/connect/token',[
-           'client_id'     => env('CLIENT_ID'),
-           'client_secret' => env('CLIENT_SECRET'),
-           'scope'         => 'api',
-           'grant_type'    => 'password',
-           'username'      => $request->input('username'),
-           'password'      => $request->input('password')
-       ]);
+         'client_id'     => env('CLIENT_ID'),
+         'client_secret' => env('CLIENT_SECRET'),
+         'scope'         => 'api',
+         'grant_type'    => 'password',
+         'username'      => $request->input('username'),
+         'password'      => $request->input('password')
+     ]);
 
         $headers = $response->headers();
 
@@ -53,6 +53,9 @@ class HomeController extends Controller
         ])->post(config('api.URL').'auth/logout');
 
         Cookie::forget('acu_cookie');
+        Cookie::forget('token');
+        Cookie::forget('username');
+        Cookie::forget('account_id');
 
         return redirect('/')->withSuccess(['msg'=>'You are logged out']);
     }

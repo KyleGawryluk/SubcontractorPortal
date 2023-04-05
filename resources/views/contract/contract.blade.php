@@ -396,7 +396,8 @@
 				<div class="modal-body alert alert-warning">
 					<form action="/contract/accept" method="post" >
 						@csrf
-							<input type="hidden" name="id" value="{{$contract->SubcontractNbr}}">
+							<input type="hidden" name="nbr" value="{{$contract->SubcontractNbr}}">
+							<input type="hidden" name="id" value="{{$contract->id}}">
 						<div class="mb-3">
 							<label for="acceptedName" class="form-label">Accepted By</label>
 							<input type="text" class="form-control" name="acceptedName" id="acceptedName">
