@@ -24,13 +24,13 @@ class HomeController extends Controller
 
         $response = Http::asForm()->withHeaders(['Content-Type' => 'application/x-www-form-urlencoded'])
         ->post(config('api.INSTANCE').'identity/connect/token',[
-         'client_id'     => env('CLIENT_ID'),
-         'client_secret' => env('CLIENT_SECRET'),
-         'scope'         => 'api',
-         'grant_type'    => 'password',
-         'username'      => $request->input('username'),
-         'password'      => $request->input('password')
-     ]);
+           'client_id'     => env('CLIENT_ID'),
+           'client_secret' => env('CLIENT_SECRET'),
+           'scope'         => 'api',
+           'grant_type'    => 'password',
+           'username'      => $request->input('username'),
+           'password'      => $request->input('password')
+       ]);
 
         $headers = $response->headers();
 
@@ -38,34 +38,9 @@ class HomeController extends Controller
 
         $body = json_decode($response->body());
 
-            // echo "<pre>";
-    // print_r($contract);
-    // echo "</pre>";
-    // exit;
-
         Cookie::queue('oauth', $response->body(), 60);
         Cookie::queue('token', $body->access_token, 60);
         Cookie::queue('username', $request->input('username'), 60);
-
-        $userinforeq = Http::withHeaders(['Authorization' => 'Bearer '.Cookie::get('token'),])
-        ->withBody(json_encode(['Username' => ['value'=>$request->input('username') ]]), 'application/json')
-        ->put(config('api.URL').'Subcontracts/20.200.001/UserInfo?$expand=UserInfoDetails');
-
-        $userinfo = json_decode($userinforeq->body());
-
-
-        //         echo "<pre>";
-        // print_r($userinfo);
-        // echo "</pre>";
-        // exit;
-        
-        $userinfo = $userinfo->UserInfoDetails[0];
-
-        Cookie::queue('first_name',$userinfo->FirstName->value, 60);
-        Cookie::queue('last_name',$userinfo->LastName->value, 60);
-        Cookie::queue('full_name',$userinfo->FirstName->value.' '.$userinfo->LastName->value, 60);
-        Cookie::queue('account_id',$userinfo->BusinessAccount->value, 60);
-        Cookie::queue('account_name',$userinfo->AccountName->value, 60);
         
         return redirect('/contracts')->withSuccess(['msg'=>'Login Success']);
     }
@@ -79,7 +54,7 @@ class HomeController extends Controller
 
         Cookie::forget('acu_cookie');
 
-        return redirect('/')->withSuccess('You are logged out');
+        return redirect('/')->withSuccess(['msg'=>'You are logged out']);
     }
 
 

@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ContractController;
 use App\Http\Middleware\CheckCookie;
+use App\Http\Middleware\UserDetails;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,7 +22,7 @@ Route::get('/', [HomeController::class, 'index']);
 Route::post('/login', [HomeController::class, 'login']);
 Route::get('/logout', [HomeController::class, 'logout']);
 
-Route::controller(ContractController::class)->middleware('cookie')->group(function () {
+Route::controller(ContractController::class)->middleware(['cookie','details'])->group(function () {
 
 	Route::get('/contracts','getContracts');
 	Route::get('/contract/{id}','getContract');

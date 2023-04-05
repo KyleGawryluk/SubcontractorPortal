@@ -24,7 +24,7 @@
 					<th>Contract Total</th>
 					{{-- <th>Unbilled Total</th> --}}
 					<th>Description</th>
-					<th class="d-none d-lg-table-cell">Project Manager</th>
+					<th class="d-none d-lg-table-cell">Installation Manager</th>
 				</thead>
 
 				@foreach($open_contracts as $o_contract)
@@ -68,7 +68,7 @@
 					<th>Contract Total</th>
 					{{-- <th>Unbilled Total</th> --}}
 					<th>Description</th>
-					<th class="d-none d-lg-table-cell">Project Manager</th>
+					<th class="d-none d-lg-table-cell">Installation Manager</th>
 				</thead>
 
 				@foreach($archived_contracts as $contract)
