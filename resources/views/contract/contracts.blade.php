@@ -70,7 +70,6 @@
 					<th>Description</th>
 					<th class="d-none d-lg-table-cell">Installation Manager</th>
 				</thead>
-
 				@foreach($archived_contracts as $contract)
 				<tr>
 					<td><a href="{{URL::to('contract').'/'.$contract->SubcontractNbr}}" target="_blank">{{$contract->SubcontractNbr}}</a></td>

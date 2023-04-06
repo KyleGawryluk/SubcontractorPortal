@@ -8,43 +8,6 @@ use Illuminate\Support\Facades\Cookie;
 
 class DataController extends Controller
 {
-    public function parseResponse($response)
-    {
-       $body = json_decode($response->body());
-
-        // echo "<pre>";
-        // print_r($response->status());
-        // echo "</pre>";
-        // exit;
-
-       switch ($response->status()) {
-           case 200:
-           return $response;
-           break;
-
-           case 401:
-           return redirect('/')->withErrors($body);
-           break;
-
-           case 403:
-           return redirect('/')->withErrors($body);
-           break;
-
-           case 429:
-           return redirect('/')->withErrors($body);
-           break;
-
-           case 500:
-           return redirect('/')->withErrors($body);
-           break;
-
-           default:
-           return redirect('/')->withErrors('Oops, Something Went Wrong');
-           break;
-       }
-
-   }
-
    public function convertToObject($dataset)
    {
     $jdata = json_decode($dataset);

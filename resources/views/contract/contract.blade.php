@@ -23,11 +23,9 @@
 	</div>
 </div>
 @endif
-
 <div class="row">
 	<h3 class="section-color shadow-sm">{{$contract->Project->Description}}</h3>
 </div>
-
 <div class="row">
 	<div class="col-md-6">
 		<table class="table table-striped table-bordered">
@@ -124,7 +122,6 @@
 			</table>
 		</div>
 	</div>
-
 	<div class="row">
 		<div class="col-md">
 			<h3 class="section-color shadow-sm">Details</h3>
@@ -162,7 +159,7 @@
 		</div>
 	</div>
 
-	<br>
+{{-- 	<br>
 	<div class="row">
 		<div class="col-md">
 			<h3 class="section-color shadow-sm">Change Orders</h3>
@@ -218,7 +215,7 @@
 			</div>
 		</div>
 	</div>
-
+ --}}
 
 	<br>
 	<div class="row">
@@ -227,9 +224,6 @@
 			<hr>
 		</div>
 	</div>
-
-
-
 	@if ($contract->Status == 'Open' && $contract->BillComplete == 0 && $contract->Accepted == 1)
 	<div class="row">
 		<div class="col-md-12"><button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#invoiceModal">Create Invoice</button></div>
@@ -247,6 +241,7 @@
 						<th>Invoice #</th>
 						<th>Invoice Date</th>
 						<th>Due Date</th>
+						{{-- <th>Description</th> --}}
 						<th>Status</th>
 						<th>Billed Amount</th>
 						<th>Notes</th>
@@ -260,6 +255,7 @@
 						<td>{{$bill->ReferenceNbr}}</td>
 						<td>@date($bill->Date)</td>
 						<td></td>
+						{{-- <td>{{$bill->Description}}</td> --}}
 						<td>{{$bill->Status}}</td>
 						<td>@currency($bill->BilledAmt)</td>
 						<td>{{$bill->note}}</td>
@@ -273,6 +269,7 @@
 						<td>{{$contract->Bills->ReferenceNbr}}</td>
 						<td>@date($contract->Bills->Date)</td>
 						<td></td>
+						{{-- <td>{{$bill->Description}}</td> --}}
 						<td>{{$contract->Bills->Status}}</td>
 						<td>@currency($contract->Bills->BilledAmt)</td>
 						<td>{{$contract->Bills->note}}</td>
@@ -292,7 +289,6 @@
 				</div>
 				<div class="modal-body">
 					<p>Contract: {{$contract->SubcontractNbr}}</p>
-
 					<form action="/invoice" method="post" >
 						@csrf
 						<input type="hidden" name="contractNbr" id="contractNbr" value="{{$contract->SubcontractNbr}}">
@@ -302,9 +298,7 @@
 						@else
 						<input type="hidden" name="vendorRef" id="vendorRef" value="{{$contract->VendorRef}}">	
 						@endif
-
 						<input type="hidden" name="totalAmount" id="totalAmount">
-
 						<div class="form-group">
 							<label>Description</label>
 							<input type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="description" id="description">
@@ -381,7 +375,6 @@
 			</div>
 		</div>
 	</div>
-
 	<div class="modal fade modal-lg" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content alert alert-warning">
@@ -412,10 +405,6 @@
 			</div>
 		</div>
 	</div>
-
-
-
-
 	@stop
 
 	@section('scripts')
@@ -424,13 +413,7 @@
 
 		$( document ).ready(function() {
 			var accepted = {{$contract->Accepted}}
-
 			var acceptModal = new bootstrap.Modal(document.getElementById('acceptModal'))
-
-			// if(accepted == 0){
-			// 	acceptModal.show();
-			// }
-
 		});
 
 		$("input[data-type='percent']").on('keyup change', function() {
@@ -490,7 +473,6 @@
 			caret_pos = updated_len - original_len + caret_pos;
 			input[0].setSelectionRange(caret_pos, caret_pos);
 		}
-
 
 
 		function calcPercent(percent) {
@@ -556,6 +538,7 @@
 			$('#vendref').val(id.concat('-').concat(count));
 		});
 
+
 		function calcTotal() {
 			var amount = 0;
 
@@ -565,8 +548,5 @@
 
 			$('#totalAmount').val(+amount);
 		}
-
-
-
 	</script>
 	@stop
