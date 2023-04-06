@@ -54,10 +54,14 @@
 				<td class="row-body">@currency($contract->SubcontractTotal)</td>
 			</tr>
 			<tr>
+				<td class="row-header"><strong>Unbilled Total</strong></td>
+				<td class="row-body">@currency($contract->UnbilledLineTotal)</td>
+			</tr>
+			<tr>
 				<td class="row-header"><strong>Description</strong></td>
 				<td class="row-body">
-					@if (!empty($contract->Description))
-					{{$contract->Description}}
+					@if (!empty($contract->ProjectDescription))
+					{{$contract->ProjectDescription}}
 					@endif
 				</td>
 			</tr>
@@ -131,11 +135,10 @@
 	<div class="row">
 		<div class="col-md">
 			<div class="table-responsive">
-				<table class="table table-striped table-bordered datatable">
+				<table class="table table-striped table-bordered datatable-details">
 					<thead>
 						<th>Line #</th>
 						<th>Description</th>
-						<th>Qty</th>
 						<th>Contract Amount</th>
 						<th>Billed Amount</th>
 						<th>Unbilled Amount</th>
@@ -146,7 +149,6 @@
 					<tr>
 						<td>{{$detail->LineNbr}}</td>
 						<td>{{$detail->LineDescription}}</td>
-						<td>{{$detail->OrderQty}}</td>
 						<td>@currency($detail->ExtCost)</td>
 						<td>@currency($detail->BilledAmount)</td>
 						<td>@currency($detail->UnbilledAmount)</td>
@@ -215,7 +217,7 @@
 			</div>
 		</div>
 	</div>
- --}}
+	--}}
 
 	<br>
 	<div class="row">
@@ -233,7 +235,7 @@
 	<div class="row invoices">
 		<div class="col-md">
 			<div class="table-responsive">
-				<table class="table table-striped table-bordered datatable">
+				<table class="table table-striped table-bordered datatable-bills">
 					<thead>
 						@if ($contract->Accepted == 1)
 						<th></th>
@@ -389,8 +391,8 @@
 				<div class="modal-body alert alert-warning">
 					<form action="/contract/accept" method="post" >
 						@csrf
-							<input type="hidden" name="nbr" value="{{$contract->SubcontractNbr}}">
-							<input type="hidden" name="id" value="{{$contract->id}}">
+						<input type="hidden" name="nbr" value="{{$contract->SubcontractNbr}}">
+						<input type="hidden" name="id" value="{{$contract->id}}">
 						<div class="mb-3">
 							<label for="acceptedName" class="form-label">Accepted By</label>
 							<input type="text" class="form-control" name="acceptedName" id="acceptedName">
@@ -410,6 +412,43 @@
 	@section('scripts')
 
 	<script>
+
+		$(document).ready( function () {
+			$('.datatable-bills').DataTable({
+				"autoWidth": false,
+				"columns": [
+					@if ($contract->Accepted == 1)
+					{ "width": "5%" },
+					@endif
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "25%" },
+					],
+			});
+
+
+			$('.datatable-details').DataTable({
+				"autoWidth": false,
+				"columns": [
+					{ "width": "5%" },
+					{ "width": "25%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "35%" },
+					],
+			});
+
+		} );
+
+
+
+
+
 
 		$( document ).ready(function() {
 			var accepted = {{$contract->Accepted}}

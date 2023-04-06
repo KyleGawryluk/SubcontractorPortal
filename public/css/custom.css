@@ -37,3 +37,25 @@
 	margin-bottom:15px;
 }
 
+
+
+.column-xs{
+	width:5%;!important
+}
+
+.column-sm{
+	width:10%;!important
+}
+
+.column-md{
+	width:15%;!important
+}
+
+.column-lg{
+	width:20%;!important
+}
+
+.column-xl{
+	width:25%;!important
+}
+

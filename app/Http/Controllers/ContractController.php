@@ -43,6 +43,11 @@ class ContractController extends Controller
         }
     }
 
+    // echo "<pre>";
+    // print_r($open_contracts);
+    // echo "</pre>";
+    // exit;
+
     $i++;
 }
 
