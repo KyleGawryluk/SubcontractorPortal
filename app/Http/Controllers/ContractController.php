@@ -12,46 +12,41 @@ use PDF;
 class ContractController extends Controller
 {
 
+    // echo "<pre>";
+    // print_r($response->body());
+    // echo "</pre>";
+    // exit;
+
+
     public function getContracts()
     {
         $response = Http::withHeaders([
             'Authorization' => 'Bearer '.Cookie::get('token'),
         ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=Vendor eq '".Cookie::get('account_id')."'");
-        // ])->get(config('api.URL')."Subcontracts/20.200.001/Subcontract");
 
         $dataController = new DataController();
 
         $response = $dataController->parseResponse($response);
 
-        // echo "<pre>";
-        // print_r(json_decode($response->body()));
-        // echo "</pre>";
-        // exit;
-
-
         $contracts = $dataController->convertToObject($response->body());
 
         $open_contracts = new \stdClass();
+
         $archived_contracts = new \stdClass();
+
         $i = 0;
 
         foreach ($contracts as $contract) {
-
-            if ($contract->SubcontractNbrStatus == 'N') {
-               $open_contracts->$i = $contract;
-           }else{
-            $archived_contracts->$i = $contract;
+            if ($contract->Status != 'On Hold') {
+               if ($contract->SubcontractNbrStatus == 'N' ) {
+                 $open_contracts->$i = $contract;
+             }else{
+                $archived_contracts->$i = $contract;
+            }
         }
 
         $i++;
     }
-
-
-     // echo "<pre>";
-     // print_r($open_contracts);
-     // echo "</pre>";
-     // exit;
-
 
     return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
 }
@@ -60,11 +55,6 @@ class ContractController extends Controller
 public function getContract($id)
 {
     $contract = $this->buildContract($id);
-
-    // echo "<pre>";
-    // print_r($contract);
-    // echo "</pre>";
-    // exit;
 
     return view('contract.contract', ['contract'=>$contract]);
 }
@@ -79,13 +69,6 @@ public function buildContract($id)
 
     $dataController = new DataController();
 
-    // $response = $dataController->parseResponse($response);
-
-    // echo "<pre>";
-    // print_r(json_decode($response->body()));
-    // echo "</pre>";
-    // exit;
-
     $index = 0;
 
     $contract = $dataController->convertToSingleObject($response->body());
@@ -99,21 +82,12 @@ public function buildContract($id)
     $contract = $this->checkBilling($contract);
 
     if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
-     $contract->Accepted = 0;
- }else{
-     $contract->Accepted = 1; 
- }
+       $contract->Accepted = 0;
+   }else{
+       $contract->Accepted = 1; 
+   }
 
-    // $contract->Accepted = 1; 
-
-
-
-    // echo "<pre>";
-    // print_r($contract);
-    // echo "</pre>";
-    // exit;
-
- return $contract;
+   return $contract;
 }
 
 
@@ -126,12 +100,6 @@ public function getContractProject($projectID)
     $dataController = new DataController();
 
     $response = $dataController->parseResponse($response);
-
-    // echo "<pre>";
-    // print_r($response->body());
-    // echo "</pre>";
-    // exit;
-
 
     $project = $dataController->convertToSingleObject($response->body());
 
@@ -153,14 +121,6 @@ public function acceptContract(Request $request)
     ])
     ->withBody(json_encode($data),'application/json')
     ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract");
-    // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract/RS/".$request->input('id')."?\$expand=Other");
-    // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract?\$filter=OrderType eq 'Subcontract' and OrderType eq '".$request->input('id')."'\$expand=Other");
-
-    // echo "<pre>";
-    // print_r(json_decode($response->body()));
-    // echo "</pre>";
-    // exit;
-
 
     return back()->withSuccess(['msg'=>'Contract has been Accepted']);
 }
@@ -172,12 +132,9 @@ public function createInvoice(Request $request)
 
     $data['Vendor']['value'] = $request->input('vendor');
     $data['VendorRef']['value'] = $request->input('vendref');
-    // $data['VendorRef']['value'] = 'oqsdoqs12hh445j';
     $data['Description']['value'] = $request->input('description');
     $data['Amount']['value'] = $request->input('totalAmount');
     $data['Details'] = [];
-
-
 
     foreach ($request->input('lines') as $line) {
         $newLine = [];
@@ -198,10 +155,10 @@ public function createInvoice(Request $request)
 
     $invoice = json_decode($response->body());
 
-    // echo "<pre>";
-    // print_r(json_decode($response->body()));
-    // echo "</pre>";
-    // exit;
+    echo "<pre>";
+    print_r(json_decode($response->body()));
+    echo "</pre>";
+    exit;
 
 
     $inv_data = ['entity'];
@@ -216,12 +173,6 @@ public function createInvoice(Request $request)
     ->withBody(json_encode($inv_data),'application/json')
     ->post(config('api.URL').'Subcontracts/20.200.001/Bill/ReleaseFromHold');
 
-
-    // echo "<pre>";
-    // print_r(json_decode($action->body()));
-    // echo "</pre>";
-    // exit;
-
     return back()->withSuccess('Invoice has been created');
 }
 
@@ -233,7 +184,7 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-     if ($bill->Status != 'Rejected') {
+       if ($bill->Status != 'Rejected') {
         $billed += $bill->BilledAmt;
     }
 }
@@ -241,7 +192,7 @@ public function checkBilling($contract)
 if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
-   $contract->BillComplete = 1;
+ $contract->BillComplete = 1;
 }
 
 return $contract;
@@ -271,18 +222,9 @@ public function printInvoice($id)
 
     $invoice = json_decode($dataController->convertToSingleObject($response->body()));
 
-
-    // echo "<pre>";
-    // print_r(json_decode($invoice));
-    // echo "</pre>";
-    // exit;
-
-
     $pdf = PDF::loadView('contract.invoice_pdf',['invoice'=>$invoice])->setPaper('letter', 'portrait');
 
     return $pdf->download('Invoice - '.$invoice->ReferenceNbr.'.pdf');
-
-    // return view('contract.invoice_pdf', ['invoice'=>$invoice]);
 }
 
 
@@ -296,18 +238,9 @@ public function printCO($id)
 
     $co = json_decode($dataController->convertToSingleObject($response->body()));
 
-
-    // echo "<pre>";
-    // print_r($co);
-    // echo "</pre>";
-    // exit;
-
-
     $pdf = PDF::loadView('contract.co_pdf',['co'=>$co])->setPaper('letter', 'portrait');
 
     return $pdf->download('Change Order - '.$co->RefNbr.'.pdf');
-
-    // return view('contract.co_pdf', ['co'=>$co]);
 }
 
 
@@ -348,9 +281,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
- if (is_object($value)) {
-     $parsed->$key = '';
- }
+   if (is_object($value)) {
+       $parsed->$key = '';
+   }
 }
 
 return $parsed;
