@@ -21,6 +21,11 @@ Route::get('/', [HomeController::class, 'index']);
 
 Route::post('/login', [HomeController::class, 'login']);
 Route::get('/logout', [HomeController::class, 'logout']);
+Route::get('/change-pw', [HomeController::class, 'passwordChange']);
+Route::post('/change-pw', [HomeController::class, 'changePW']);
+
+Route::get('/oauth-login', [HomeController::class, 'oauthLogin']);
+Route::get('/get-token', [HomeController::class, 'getToken']);
 
 Route::controller(ContractController::class)->middleware(['cookie','details'])->group(function () {
 

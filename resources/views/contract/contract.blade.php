@@ -13,7 +13,7 @@
 @if ($contract->Accepted == 1)
 <div class="row action-bar">
 	<div class="col-md-12">
-		<a class="btn btn-warning pdf" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
+		<a class="btn btn-warning pdf loading" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
 	</div>
 </div>
 @else
@@ -252,7 +252,7 @@
 					@foreach ($contract->Bills as $bill)
 					<tr>
 						@if ($contract->Accepted == 1)
-						<td><a class="btn btn-info pdf inv-line" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a></td>
+						<td><a class="btn btn-info pdf inv-line loading" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a></td>
 						@endif
 						<td>{{$bill->ReferenceNbr}}</td>
 						<td>@date($bill->Date)</td>
@@ -370,7 +370,7 @@
 
 					</div>
 					<div class="modal-footer">
-						<button type="submit" class="btn btn-primary">Create</button>
+						<button type="submit" class="btn btn-primary loading">Create</button>
 					</form>
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
 				</div>
@@ -401,7 +401,7 @@
 							<label for="acceptedDate" class="form-label">Accepted Date</label>
 							<input type="text" class="form-control" name="acceptedDate" id="acceptedDate" value="@date(date(now()))" readonly>
 						</div>
-						<button class="btn btn-success" type="submit">Accept Purchase Order</button>
+						<button class="btn btn-success loading" type="submit">Accept Purchase Order</button>
 					</form>
 				</div>
 			</div>
@@ -444,11 +444,6 @@
 			});
 
 		} );
-
-
-
-
-
 
 		$( document ).ready(function() {
 			var accepted = {{$contract->Accepted}}

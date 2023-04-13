@@ -59,6 +59,7 @@ public function getContract($id)
 {
     $contract = $this->buildContract($id);
 
+
     // echo "<pre>";
     // print_r($contract);
     // echo "</pre>";
@@ -128,7 +129,7 @@ public function acceptContract(Request $request)
     ->withBody(json_encode($data),'application/json')
     ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract");
 
-    return back()->withSuccess(['msg'=>'Contract has been Accepted']);
+    return back()->withSuccess(['status'=>'Contract has been Accepted']);
 }
 
 
@@ -160,11 +161,6 @@ public function createInvoice(Request $request)
     ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$expand=Details');
 
     $invoice = json_decode($response->body());
-
-    echo "<pre>";
-    print_r(json_decode($response->body()));
-    echo "</pre>";
-    exit;
 
 
     $inv_data = ['entity'];
