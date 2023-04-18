@@ -26,7 +26,7 @@
 <div class="row">
 	<div class="col-md-4 offset-md-4">
 		<div class="text-center">
-			<a href="//{{config('api.INSTANCE').'identity/connect/authorize?response_type=code&client_id='.env('CLIENT_ID').'&redirect_uri='.url('oauth-login')}}&scope=api" class="btn btn-primary">Click to Login</a>
+			<a href="{{config('api.INSTANCE').'identity/connect/authorize?response_type=code&client_id='.env('CLIENT_ID').'&redirect_uri='.url('oauth-login')}}&scope=api" class="btn btn-primary">Click to Login</a>
 			<br>
 			<br>
 			<p class="alert alert-warning">You will be redirected to an outside page to login</p>
