@@ -36,22 +36,24 @@ class ContractController extends Controller
 
         foreach ($contracts as $contract) {
             if ($contract->Status != 'On Hold') {
-             if ($contract->SubcontractNbrStatus == 'N' ) {
-               $open_contracts->$i = $contract;
-           }else{
-            $archived_contracts->$i = $contract;
+               if ($contract->SubcontractNbrStatus == 'N' ) {
+                 $open_contracts->$i = $contract;
+             }else{
+                $archived_contracts->$i = $contract;
+            }
         }
+
+
+        $i++;
     }
 
+    
     // echo "<pre>";
     // print_r($open_contracts);
     // echo "</pre>";
     // exit;
 
-    $i++;
-}
-
-return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
+    return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
 }
 
 
@@ -91,12 +93,12 @@ public function buildContract($id)
     $contract = $this->checkBilling($contract);
 
     if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
-     $contract->Accepted = 0;
- }else{
-     $contract->Accepted = 1; 
- }
+       $contract->Accepted = 0;
+   }else{
+       $contract->Accepted = 1; 
+   }
 
- return $contract;
+   return $contract;
 }
 
 
@@ -186,7 +188,7 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-     if ($bill->Status != 'Rejected') {
+       if ($bill->Status != 'Rejected') {
         $billed += $bill->BilledAmt;
     }
 }
@@ -194,7 +196,7 @@ public function checkBilling($contract)
 if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
-   $contract->BillComplete = 1;
+ $contract->BillComplete = 1;
 }
 
 return $contract;
@@ -283,9 +285,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
- if (is_object($value)) {
-     $parsed->$key = '';
- }
+   if (is_object($value)) {
+       $parsed->$key = '';
+   }
 }
 
 return $parsed;

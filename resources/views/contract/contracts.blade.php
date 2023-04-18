@@ -19,6 +19,7 @@
 				<thead class="table-light">
 					<th>Order #</th>
 					<th>Description</th>
+					<th>Accepted</th>
 					<th class="d-none d-lg-table-cell">Start Date</th>
 					<th class="d-none d-lg-table-cell">Status</th>
 					<th class="d-none d-lg-table-cell">Vendor Ref</th>
@@ -35,6 +36,7 @@
 						{{$o_contract->ProjectDescription}}
 						@endif
 					</td>
+					<td class="d-none d-lg-table-cell">@if($o_contract->Accepted == 1) <i class="bi bi-check2-circle text-success"></i>@else<i class="bi bi-question-circle text-warning"></i> @endif</td>
 					<td class="d-none d-lg-table-cell">@date($o_contract->StartDate)</td>
 					<td class="d-none d-lg-table-cell">{{$o_contract->Status}}</td>
 					<td class="d-none d-lg-table-cell">
@@ -63,6 +65,7 @@
 				<thead class="table-light">
 					<th>Order #</th>
 					<th>Description</th>
+					<th>Accepted</th>
 					<th class="d-none d-lg-table-cell">Start Date</th>
 					<th class="d-none d-lg-table-cell">Status</th>
 					<th class="d-none d-lg-table-cell">Vendor Ref</th>
@@ -78,6 +81,7 @@
 						{{$contract->ProjectDescription}}
 						@endif
 					</td>
+					<td class="d-none d-lg-table-cell">@if($contract->Accepted == 1) <i class="bi bi-check2-circle text-success-emphasis"></i>@else<i class="bi bi-question-circle text-warning"></i> @endif</td>
 					<td class="d-none d-lg-table-cell">@date($contract->StartDate)</td>
 					<td class="d-none d-lg-table-cell">{{$contract->Status}}</td>
 					<td class="d-none d-lg-table-cell">
@@ -106,6 +110,7 @@
 			"columns": [
 				{ "width": "5%" },
 				{ "width": "20%" },
+				{ "width": "1%" },
 				{ "width": "5%" },
 				{ "width": "5%" },
 				{ "width": "5%" },
