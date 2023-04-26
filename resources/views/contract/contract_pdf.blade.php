@@ -78,10 +78,10 @@ hr {
                         <td><hr></td>
                     </tr>
                     <tr>
-                        <td><strong>Accepted by:</strong> </td>
+                        <td><strong>Accepted by:</strong> {{$contract->AcceptedBy}}</td>
                     </tr>
                     <tr>
-                        <td><strong>Accepted Date:</strong> </td>
+                        <td><strong>Accepted Date:</strong> @date($contract->AcceptedDate)</td>
                     </tr>
                 </table>
             </td>

@@ -13,7 +13,7 @@
 @if ($contract->Accepted == 1)
 <div class="row action-bar">
 	<div class="col-md-12">
-		<a class="btn btn-warning pdf loading" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
+		<a class="btn btn-warning pdf" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
 	</div>
 </div>
 @else
