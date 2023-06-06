@@ -137,6 +137,11 @@ public function acceptContract(Request $request)
 
 public function createInvoice(Request $request)
 {
+
+    if ($request->input('totalAmount') <= 0) {
+       return back()->withError('Invoice Amount Cannot be 0');
+    }
+
     $data = [];
 
     $data['Vendor']['value'] = $request->input('vendor');

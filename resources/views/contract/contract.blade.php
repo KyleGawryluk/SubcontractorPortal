@@ -320,14 +320,14 @@
 							@endif
 						</div>
 						<br>
-						<table class="table table-striped table-bordered">
+						<table class="table table-striped table-bordered ">
 							<thead>
 								<th>Description</th>
-								<th>Contract Amount</th>
-								<th>Billed Amount</th>
+								<th class="d-none d-lg-table-cell">Contract Amount</th>
+								<th class="d-none d-lg-table-cell">Billed Amount</th>
 								<th>Unbilled Amount</th>
-								<th>Retained Amount</th>
-								<th>Percent to Bill</th>
+								<th class="d-none d-lg-table-cell">Retained Amount</th>
+								<th class="d-none d-lg-table-cell">Percent to Bill</th>
 								<th>Amount to Bill</th>
 							</thead>
 							@foreach ($contract->SubcontractLines as $detail)
@@ -340,11 +340,11 @@
 									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][retained]" id="retained{{$detail->LineNbr}}" value="{{$detail->RetainageAmount}}">
 									<input type="hidden" line-nbr="{{$detail->LineNbr}}" name="lines[{{$detail->LineNbr}}][line]" id="line{{$detail->LineNbr}}" value="{{$detail->LineNbr}}">
 								</td>
-								<td>@currency($detail->ExtCost)</td>
-								<td>@currency($detail->BilledAmount)</td>
+								<td class="d-none d-lg-table-cell">@currency($detail->ExtCost)</td>
+								<td class="d-none d-lg-table-cell">@currency($detail->BilledAmount)</td>
 								<td>@currency($detail->UnbilledAmount)</td>
-								<td>@currency($detail->RetainageAmount)</td>
-								<td>
+								<td class="d-none d-lg-table-cell">@currency($detail->RetainageAmount)</td>
+								<td class="d-none d-lg-table-cell">
 									<div class="form-group">
 										<input type="text" data-type="percent" value="0" line-nbr="{{$detail->LineNbr}}" class="form-control {{ $errors->has('percent'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][percent]" id="percent{{$detail->LineNbr}}">
 										@if ($errors->has('percent'.$detail->LineNbr))
