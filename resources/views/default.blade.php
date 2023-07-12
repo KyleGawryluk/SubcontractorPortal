@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-	<title>SGH Portal</title>
+	<title>@yield('title')</title>
+	 <link rel="icon" type="image/x-icon" href="{{asset('img/favicon.ico')}}">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="{{asset('css/custom.css')}}" rel="stylesheet">
 	<link href="{{asset('css/app.css')}}" rel="stylesheet">
@@ -49,7 +50,7 @@
 				</ul>
 				@if (Cookie::get('account_name') != null)
 				<div class="d-flex">
-					<span class="navbar-text">{{Cookie::get('full_name')}} - {{Cookie::get('account_name')}}</span>
+					<span class="navbar-text">{{Cookie::get('full_name')}} - {{Cookie::get('account_name')}} ({{Cookie::get('account_id')}})</span>
 					<span class="navbar-text">&nbsp;&nbsp;&nbsp;</span>
 					<a class=" btn btn-primary" aria-current="page" href="{{URL::to('logout')}}">Logout</a>
 				</div>
