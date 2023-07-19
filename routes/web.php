@@ -37,8 +37,15 @@ Route::controller(ContractController::class)->middleware(['cookie','details'])->
 	Route::get('/invoice/pdf/{id}','printInvoice');
 
 	Route::get('/co/pdf/{id}','printCO');
+});
+
+Route::controller(HomeController::class)->middleware(['cookie'])->group(function () {
+
+	Route::get('/mirror','mirror');
+	Route::post('/mirror','loginAs');
 
 });
+
 
 
 

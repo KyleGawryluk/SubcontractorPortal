@@ -36,24 +36,24 @@ class ContractController extends Controller
 
         foreach ($contracts as $contract) {
             if ($contract->Status != 'On Hold') {
-               if ($contract->SubcontractNbrStatus == 'N' ) {
-                 $open_contracts->$i = $contract;
-             }else{
-                $archived_contracts->$i = $contract;
-            }
+             if ($contract->SubcontractNbrStatus == 'N' ) {
+               $open_contracts->$i = $contract;
+           }else{
+            $archived_contracts->$i = $contract;
         }
-
-
-        $i++;
     }
 
-    
+
+    $i++;
+}
+
+
     // echo "<pre>";
     // print_r($open_contracts);
     // echo "</pre>";
     // exit;
 
-    return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
+return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
 }
 
 
@@ -61,11 +61,6 @@ public function getContract($id)
 {
     $contract = $this->buildContract($id);
 
-
-    // echo "<pre>";
-    // print_r($contract);
-    // echo "</pre>";
-    // exit;
 
     return view('contract.contract', ['contract'=>$contract]);
 }
@@ -92,13 +87,21 @@ public function buildContract($id)
 
     $contract = $this->checkBilling($contract);
 
-    if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
-       $contract->Accepted = 0;
-   }else{
-       $contract->Accepted = 1; 
-   }
+    $contract = $this->parseCOs($contract);
 
-   return $contract;
+    if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
+     $contract->Accepted = 0;
+ }else{
+     $contract->Accepted = 1; 
+ }
+
+
+ // echo "<pre>";
+ // print_r($contract);
+ // echo "</pre>";
+ // exit;
+
+ return $contract;
 }
 
 
@@ -139,50 +142,55 @@ public function createInvoice(Request $request)
 {
 
     if ($request->input('totalAmount') <= 0) {
-       return back()->withError('Invoice Amount Cannot be 0');
-    }
+     return back()->withError('Invoice Amount Cannot be 0');
+ }
 
-    $data = [];
+ $data = [];
 
-    $data['Vendor']['value'] = $request->input('vendor');
-    $data['VendorRef']['value'] = $request->input('vendref');
-    $data['Description']['value'] = $request->input('description');
-    $data['Amount']['value'] = $request->input('totalAmount');
-    $data['Details'] = [];
+ $data['Vendor']['value'] = $request->input('vendor');
+ $data['VendorRef']['value'] = $request->input('vendref');
+ $data['Description']['value'] = $request->input('description');
+ $data['Amount']['value'] = $request->input('totalAmount');
+ $data['Details'] = [];
 
-    foreach ($request->input('lines') as $line) {
-        $newLine = [];
-        $newLine['POOrderType']['value'] = 'Subcontract';
-        $newLine['POOrderNbr']['value'] = $request->input('contractNbr');
-        $newLine['POLine']['value'] = $line['line'];
-        $newLine['UnitCost']['value'] = $line['amount'];
-        $newLine['Qty']['value'] = 1;
-        $newLine['BranchID']['value'] = 'TBGROUP';
-        $data['Details'][] = $newLine;
-    }
+ foreach ($request->input('lines') as $line) {
+    $newLine = [];
+    $newLine['POOrderType']['value'] = 'Subcontract';
+    $newLine['POOrderNbr']['value'] = $request->input('contractNbr');
+    $newLine['POLine']['value'] = $line['line'];
+    $newLine['UnitCost']['value'] = $line['amount'];
+    $newLine['Qty']['value'] = 1;
+    // $newLine['BranchID']['value'] = 'HEADOFFICE';
+    $data['Details'][] = $newLine;
+}
 
-    $response = Http::withHeaders([
-        'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])
-    ->withBody(json_encode($data),'application/json')
-    ->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$expand=Details');
+$response = Http::withHeaders([
+    'Authorization' => 'Bearer '.Cookie::get('token'),
+])
+->withBody(json_encode($data),'application/json')
+->put(config('api.URL').'Subcontracts/20.200.001/Bill'.'?$expand=Details');
 
-    $invoice = json_decode($response->body());
+$invoice = json_decode($response->body());
 
 
-    $inv_data = ['entity'];
+// echo "<pre>";
+// print_r($invoice);
+// echo "</pre>";
+// exit;
+
+$inv_data = ['entity'];
 
     // $inv_data['entity']['RefNbr'] = $invoice->ReferenceNbr->value;
     // $inv_data['entity']['DocType'] = 'INV';
-    $inv_data['entity']['id'] = $invoice->id;
+$inv_data['entity']['id'] = $invoice->id;
 
-    $action = Http::withHeaders([
-        'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])
-    ->withBody(json_encode($inv_data),'application/json')
-    ->post(config('api.URL').'Subcontracts/20.200.001/Bill/ReleaseFromHold');
+$action = Http::withHeaders([
+    'Authorization' => 'Bearer '.Cookie::get('token'),
+])
+->withBody(json_encode($inv_data),'application/json')
+->post(config('api.URL').'Subcontracts/20.200.001/Bill/ReleaseFromHold');
 
-    return back()->withSuccess('Invoice has been created');
+return back()->withSuccess('Invoice has been created');
 }
 
 
@@ -193,7 +201,7 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-       if ($bill->Status != 'Rejected') {
+     if ($bill->Status != 'Rejected') {
         $billed += $bill->BilledAmt;
     }
 }
@@ -201,10 +209,34 @@ public function checkBilling($contract)
 if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
- $contract->BillComplete = 1;
+   $contract->BillComplete = 1;
 }
 
 return $contract;
+}
+
+
+
+public function parseCOs($contract)
+{
+    $totalCoAmt = 0;
+
+
+    foreach ($contract->SubcontractLines as $key => $line) {
+        $contract->SubcontractLines[$key]->ChangeAmt = 0;
+        foreach ($contract->ChangeOrders as $co) {
+           if ($line->LineNbr == $co->POLineNbr) {
+               $contract->SubcontractLines[$key]->ChangeAmt = $co->Amount;
+           }
+           $totalCoAmt += $co->Amount;
+       }
+   }
+
+   $contract->ChangeOrderTotal = $totalCoAmt;
+
+   $contract->OriginalContractAmt = $contract->SubcontractTotal - $totalCoAmt;
+
+   return $contract;
 }
 
 
@@ -290,9 +322,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
-   if (is_object($value)) {
-       $parsed->$key = '';
-   }
+ if (is_object($value)) {
+     $parsed->$key = '';
+ }
 }
 
 return $parsed;

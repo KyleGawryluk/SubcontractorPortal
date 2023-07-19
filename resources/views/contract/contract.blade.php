@@ -1,5 +1,9 @@
 @extends('default')
 
+@section('title')
+{{$contract->Project->Description}}
+@stop
+
 @section('styles')	
 <style>
 	.action-bar{
@@ -50,7 +54,16 @@
 				</td>
 			</tr>
 			<tr>
-				<td class="row-header"><strong>Contract Total</strong></td>
+				<td class="row-header"><strong>Original Contract Total</strong></td>
+				<td class="row-body">@currency($contract->OriginalContractAmt)</td>
+			</tr>
+
+			<tr>
+				<td class="row-header"><strong>ChangeOrderTotal</strong></td>
+				<td class="row-body">@currency($contract->ChangeOrderTotal)</td>
+			</tr>
+			<tr>
+				<td class="row-header"><strong>Revised Contract Total</strong></td>
 				<td class="row-body">@currency($contract->SubcontractTotal)</td>
 			</tr>
 			<tr>
@@ -65,6 +78,12 @@
 					@endif
 				</td>
 			</tr>
+
+
+		</table>
+	</div>
+	<div class="col-md-6">
+		<table class="table table-striped table-bordered">
 			<tr>
 				<td class="row-header"><strong>Installation Manager</strong></td>
 				<td class="row-body">
@@ -73,14 +92,6 @@
 					@endif
 				</td>
 			</tr>
-			<tr>
-				<td class="row-header"><strong>Notes</strong></td>
-				<td class="row-body">{{$contract->note}}</td>
-			</tr>
-		</table>
-	</div>
-	<div class="col-md-6">
-		<table class="table table-striped table-bordered">
 			<tr>
 				<td class="row-header"><strong>Jobsite</strong></td>
 				<td class="row-body">{{$contract->Project->Description}}</td>
@@ -123,6 +134,10 @@
 						</ul>
 					</td>
 				</tr>
+				<tr>
+					<td class="row-header"><strong>Notes</strong></td>
+					<td class="row-body">{{$contract->note}}</td>
+				</tr>
 			</table>
 		</div>
 	</div>
@@ -139,7 +154,9 @@
 					<thead>
 						<th>Line #</th>
 						<th>Description</th>
-						<th>Contract Amount</th>
+						<th>Original Contract Amount</th>
+						<th>CO Amount</th>
+						<th>Revised Contract Amount</th>
 						<th>Billed Amount</th>
 						<th>Unbilled Amount</th>
 						<th>Retained Amount</th>
@@ -149,6 +166,8 @@
 					<tr>
 						<td>{{$detail->LineNbr}}</td>
 						<td>{{$detail->LineDescription}}</td>
+						<td>@currency($detail->UnitCost)</td>
+						<td>@currency($detail->ChangeAmt)</td>
 						<td>@currency($detail->ExtCost)</td>
 						<td>@currency($detail->BilledAmount)</td>
 						<td>@currency($detail->UnbilledAmount)</td>
@@ -161,7 +180,7 @@
 		</div>
 	</div>
 
-{{-- 	<br>
+	<br>
 	<div class="row">
 		<div class="col-md">
 			<h3 class="section-color shadow-sm">Change Orders</h3>
@@ -182,6 +201,7 @@
 						<th>Amount</th>
 						<th>CO Description</th>
 						<th>Line Description</th>
+						<th>Subcontract Line #</th>
 						<th>Notes</th>
 					</thead>
 					@if(is_array($contract->ChangeOrders))
@@ -196,6 +216,7 @@
 						<td>@currency($co->Amount)</td>
 						<td>{{$co->DescriptionPMChangeOrder__Description}}</td>
 						<td>{{$co->DescriptionDescription}}</td>
+						<td>{{$co->POLineNbr}}</td>
 						<td>{{$co->note}}</td>
 					</tr>
 					@endforeach
@@ -217,7 +238,7 @@
 			</div>
 		</div>
 	</div>
-	--}}
+	
 
 	<br>
 	<div class="row">
@@ -303,7 +324,7 @@
 						<input type="hidden" name="totalAmount" id="totalAmount">
 						<div class="form-group">
 							<label>Description</label>
-							<input type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="description" id="description">
+							<input type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="description" id="description" value="{{$contract->Project->Description}}">
 							@if ($errors->has('description'))
 							<div class="error">
 								{{ $errors->first('description') }}
@@ -331,6 +352,7 @@
 								<th>Amount to Bill</th>
 							</thead>
 							@foreach ($contract->SubcontractLines as $detail)
+							@if ($detail->Closed != 1)
 							<tr>
 								<td>
 									{{$detail->LineDescription}}
@@ -365,6 +387,7 @@
 									</div>
 								</td>
 							</tr>
+							@endif
 							@endforeach
 						</table>
 
@@ -435,6 +458,8 @@
 				"columns": [
 					{ "width": "5%" },
 					{ "width": "25%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
 					{ "width": "5%" },
 					{ "width": "5%" },
 					{ "width": "5%" },

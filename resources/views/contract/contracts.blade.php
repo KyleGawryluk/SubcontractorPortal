@@ -1,5 +1,10 @@
 @extends('default')
 
+@section('title')
+My Subcontracts
+@stop
+
+
 @section('styles')	
 <style>
 

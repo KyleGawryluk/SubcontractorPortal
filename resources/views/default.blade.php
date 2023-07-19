@@ -35,6 +35,11 @@
 						<a class="nav-link" href="{{URL::to('contracts')}}">Contracts</a>
 					</li>
 					@endif
+					@if (Cookie::get('account_id') == 'SRH')
+											<li class="nav-item">
+						<a class="nav-link" href="{{URL::to('mirror')}}">Login As</a>
+					</li>
+					@endif
 {{-- 					<li class="nav-item dropdown">
 						<a class="nav-link dropdown-toggle" href="" role="button" data-bs-toggle="dropdown" aria-expanded="false">
 							Dropdown

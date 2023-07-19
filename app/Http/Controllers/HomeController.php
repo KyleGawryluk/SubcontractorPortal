@@ -53,6 +53,24 @@ class HomeController extends Controller
         return redirect('/contracts')->with(['status'=>'Login Success']);
     }
 
+    public function mirror()
+    {
+        return view('mirror');
+    }
+
+    public function loginAs(Request $request)
+    {
+        $validated = $request->validate([
+            'account_id' => 'required|max:10',
+        ]);
+
+        $account = strtoupper($request->input('account_id'));
+
+        Cookie::queue('account_id',$account, 5);
+
+        return redirect('/contracts')->with(['status'=>'Login Success']);
+    }
+
 
     public function logout()
     {
@@ -60,10 +78,17 @@ class HomeController extends Controller
             'Cookie' => Cookie::get('acu_cookie'),
         ])->post(config('api.URL').'auth/logout');
 
-        Cookie::forget('acu_cookie');
-        Cookie::forget('token');
-        Cookie::forget('username');
-        Cookie::forget('account_id');
+        Cookie::queue(Cookie::forget('acu_cookie'));
+        Cookie::queue(Cookie::forget('token'));
+        Cookie::queue(Cookie::forget('username'));
+        Cookie::queue(Cookie::forget('first_name'));
+        Cookie::queue(Cookie::forget('last_name'));
+        Cookie::queue(Cookie::forget('full_name'));
+        Cookie::queue(Cookie::forget('account_id'));
+        Cookie::queue(Cookie::forget('account_name'));
+        Cookie::queue(Cookie::forget('oauth'));
+        Cookie::queue(Cookie::forget('token'));
+        Cookie::queue(Cookie::forget('oauth-code'));
 
         return redirect('/')->withSuccess(['msg'=>'You are logged out']);
     }
