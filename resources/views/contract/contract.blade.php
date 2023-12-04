@@ -18,6 +18,8 @@
 <div class="row action-bar">
 	<div class="col-md-12">
 		<a class="btn btn-warning pdf" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
+				<span class="btn btn-primary attachments" data-bs-toggle="modal" data-bs-target="#attachmentsModal">Attachments ({{count($contract->files)}})</span>
+		<span class="btn btn-info" data-bs-toggle="modal" data-bs-target="#newFileModal"><i class="bi bi-cloud-upload"></i></span>
 	</div>
 </div>
 @else
@@ -273,14 +275,24 @@
 					@foreach ($contract->Bills as $bill)
 					<tr>
 						@if ($contract->Accepted == 1)
-						<td><a class="btn btn-info pdf inv-line loading" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a></td>
+						<td>
+							<div class="btn-toolbar mb-3" role="toolbar">
+								<div class="btn-group" role="group">
+									<a class="btn btn-warning pdf inv-line loading" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a>
+
+									<span class="btn btn-primary attachments" data-bs-toggle="modal" data-bs-target="#bill{{$bill->ReferenceNbr}}AttachmentsModal"><i class="bi bi-paperclip"></i> ({{count($bill->files)}})</span>
+	
+									<span class="btn btn-info" data-bs-toggle="modal" data-bs-target="#bill{{$bill->ReferenceNbr}}FileModal"><i class="bi bi-cloud-upload"></i></span>
+								</div>
+							</div>
+						</td>
 						@endif
 						<td>{{$bill->ReferenceNbr}}</td>
 						<td>@date($bill->Date)</td>
 						<td></td>
 						{{-- <td>{{$bill->Description}}</td> --}}
 						<td>{{$bill->Status}}</td>
-						<td>@currency($bill->BilledAmt)</td>
+						<td>@currency($bill->Amount)</td>
 						<td>{{$bill->note}}</td>
 					</tr>
 					@endforeach
@@ -294,7 +306,7 @@
 						<td></td>
 						{{-- <td>{{$bill->Description}}</td> --}}
 						<td>{{$contract->Bills->Status}}</td>
-						<td>@currency($contract->Bills->BilledAmt)</td>
+						<td>@currency($contract->Bills->Amount)</td>
 						<td>{{$contract->Bills->note}}</td>
 					</tr>
 					@endif
@@ -430,6 +442,128 @@
 			</div>
 		</div>
 	</div>
+
+
+	<div class="modal fade modal-lg" id="attachmentsModal" tabindex="-1" aria-labelledby="attachmentsModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="invoiceModalLabel">Attachments</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table">
+						@if (!isset($contract->files))
+						<p>No Attachments Found</p>
+						@else
+						<table class="table table-striped">
+							<thead>
+								<th>Filename</th>
+								<th>Download</th>
+							</thead>
+							@foreach ($contract->files as $file)
+							<tr>
+								<td>{{substr($file->filename, strrpos($file->filename, '\\') + 1)}}</td>
+								<td><a class="" href="file/{{$file->id}}/{{substr($file->filename, strrpos($file->filename, '\\') + 1)}}" target="_blank"><i class="bi bi-download"></i></a></td>
+							</tr>
+							@endforeach
+						</table>
+						@endif
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	@foreach ($contract->Bills as $bill)
+	<div class="modal fade modal-lg" id="bill{{$bill->ReferenceNbr}}AttachmentsModal" tabindex="-1" aria-labelledby="bill{{$bill->ReferenceNbr}}AttachmentsModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="bill{{$bill->ReferenceNbr}}AttachmentsModalLabel">Invoice Attachments</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table">
+						@if (!isset($bill->files))
+						<p>No Attachments Found</p>
+						@else
+						<table class="table table-striped">
+							<thead>
+								<th>Filename</th>
+								<th>Download</th>
+							</thead>
+							@foreach ($bill->files as $file)
+							<tr>
+								<td>{{substr($file->filename, strrpos($file->filename, '\\') + 1)}}</td>
+								<td><a class="" href="file/{{$file->id}}/{{substr($file->filename, strrpos($file->filename, '\\') + 1)}}" target="_blank"><i class="bi bi-download"></i></a></td>
+							</tr>
+							@endforeach
+						</table>
+						@endif
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade modal-lg" id="bill{{$bill->ReferenceNbr}}FileModal" tabindex="-1" aria-labelledby="bill{{$bill->ReferenceNbr}}FileModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="bill{{$bill->ReferenceNbr}}FileModalLabel">Attach file to Invoice #{{$bill->ReferenceNbr}}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p class="alert alert-warning">
+						Accepted file types: .jpg .pdf
+					</p>
+					<form action="/bill/file" method="post" enctype="multipart/form-data">
+						@csrf
+						<input type="hidden" name="nbr" value="{{$bill->ReferenceNbr}}">
+						<input type="hidden" name="id" value="{{$bill->id}}">
+						<input type="file" class="form-control" name="attachment" id="attachment">
+						<hr>
+						<button class="btn btn-success loading" type="submit">Upload File</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	@endforeach
+
+
+
+
+
+	<div class="modal fade modal-lg" id="newFileModal" tabindex="-1" aria-labelledby="newFileModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="invoiceModalLabel">File Upload</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p class="alert alert-warning">
+						Accepted file types: .jpg .pdf
+					</p>
+					<form action="/contract/file" method="post" enctype="multipart/form-data">
+						@csrf
+						<input type="hidden" name="nbr" value="{{$contract->SubcontractNbr}}">
+						<input type="hidden" name="id" value="{{$contract->id}}">
+						<input type="file" class="form-control" name="attachment" id="attachment">
+						<hr>
+						<button class="btn btn-success loading" type="submit">Upload File</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
 	@stop
 
 	@section('scripts')

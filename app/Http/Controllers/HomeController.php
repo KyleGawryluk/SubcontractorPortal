@@ -92,4 +92,9 @@ class HomeController extends Controller
 
         return redirect('/')->withSuccess(['msg'=>'You are logged out']);
     }
+
+    public function calendar()
+    {
+        return view('calendar/test_calendar');
+    }
 }

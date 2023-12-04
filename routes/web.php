@@ -19,6 +19,8 @@ use App\Http\Middleware\UserDetails;
 
 Route::get('/', [HomeController::class, 'index']);
 
+
+
 Route::post('/login', [HomeController::class, 'login']);
 Route::get('/logout', [HomeController::class, 'logout']);
 Route::get('/change-pw', [HomeController::class, 'passwordChange']);
@@ -32,6 +34,11 @@ Route::controller(ContractController::class)->middleware(['cookie','details'])->
 	Route::get('/contract/{id}','getContract');
 	Route::get('/contract/pdf/{id}','printContract');
 	Route::post('/contract/accept','acceptContract');
+	Route::post('/contract/file','uploadFile');
+	Route::get('/contract/file/{id}/{filename}','getFile');
+
+	Route::post('/bill/file','uploadBillFile');
+	Route::get('/bill/file/{id}/{filename}','getBillFile');
 
 	Route::post('/invoice','createInvoice');
 	Route::get('/invoice/pdf/{id}','printInvoice');
