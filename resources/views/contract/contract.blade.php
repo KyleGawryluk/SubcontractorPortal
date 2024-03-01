@@ -18,13 +18,14 @@
 <div class="row action-bar">
 	<div class="col-md-12">
 		<a class="btn btn-warning pdf" href="{{URL::to('contract').'/pdf/'.$contract->SubcontractNbr}}">Print Contract</a>
-				<span class="btn btn-primary attachments" data-bs-toggle="modal" data-bs-target="#attachmentsModal">Attachments ({{count($contract->files)}})</span>
+		<span class="btn btn-primary attachments" data-bs-toggle="modal" data-bs-target="#attachmentsModal">Attachments ({{count($contract->files)}})</span>
 		<span class="btn btn-info" data-bs-toggle="modal" data-bs-target="#newFileModal"><i class="bi bi-cloud-upload"></i></span>
 	</div>
 </div>
 @else
 <div class="row action-bar">
 	<div class="col-md-12">
+		<span class="btn btn-primary attachments" data-bs-toggle="modal" data-bs-target="#attachmentsModal">Attachments ({{count($contract->files)}})</span>
 		<button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#acceptModal">Accept Purchase Order</button>
 	</div>
 </div>
@@ -186,9 +187,14 @@
 	<div class="row">
 		<div class="col-md">
 			<h3 class="section-color shadow-sm">Change Orders</h3>
-			<hr>
 		</div>
 	</div>
+	@if ($contract->Status == 'Open' && $contract->BillComplete == 0 && $contract->Accepted == 1)
+	<div class="row">
+		<div class="col-md-12"><button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#coModal">Change Order Request</button></div>
+	</div>
+	<br>
+	@endif
 	<div class="row">
 		<div class="col-md">
 			<div class="table-responsive">
@@ -240,13 +246,14 @@
 			</div>
 		</div>
 	</div>
-	
+
+	<br>
+
 
 	<br>
 	<div class="row">
 		<div class="col-md">
 			<h3 class="section-color shadow-sm">Invoices</h3>
-			<hr>
 		</div>
 	</div>
 	@if ($contract->Status == 'Open' && $contract->BillComplete == 0 && $contract->Accepted == 1)
@@ -281,7 +288,7 @@
 									<a class="btn btn-warning pdf inv-line loading" href="{{URL::to('invoice').'/pdf/'.$bill->ReferenceNbr}}">Print</a>
 
 									<span class="btn btn-primary attachments" data-bs-toggle="modal" data-bs-target="#bill{{$bill->ReferenceNbr}}AttachmentsModal"><i class="bi bi-paperclip"></i> ({{count($bill->files)}})</span>
-	
+
 									<span class="btn btn-info" data-bs-toggle="modal" data-bs-target="#bill{{$bill->ReferenceNbr}}FileModal"><i class="bi bi-cloud-upload"></i></span>
 								</div>
 							</div>
@@ -390,7 +397,7 @@
 								</td>
 								<td>
 									<div class="form-group">
-										<input type="test" data-type="amount" value="0"  line-nbr="{{$detail->LineNbr}}" value="" data-type="currency"  class="form-control inv_amount {{ $errors->has('amount'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][amount]" id="amount{{$detail->LineNbr}}">
+										<input type="test" data-type="amount" value="0"  line-nbr="{{$detail->LineNbr}}" value="" data-type="currency"  class="currency form-control inv_amount {{ $errors->has('amount'.$detail->LineNbr) ? 'error' : '' }}" name="lines[{{$detail->LineNbr}}][amount]" id="amount{{$detail->LineNbr}}">
 										@if ($errors->has('amount'.$detail->LineNbr))
 										<div class="error">
 											{{ $errors->first('amount'.$detail->LineNbr) }}
@@ -412,6 +419,106 @@
 			</div>
 		</div>
 	</div>
+
+
+
+	<div class="modal fade modal-lg" id="coModal" tabindex="-1" aria-labelledby="coModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="coModalLabel">Request Change Order</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p>Contract: {{$contract->SubcontractNbr}}</p>
+					<form action="/co" method="post" >
+						@csrf
+						<input type="hidden" name="contractNbr" id="contractNbr" value="{{$contract->SubcontractNbr}}">
+						<input type="hidden" name="project" id="project" value="{{$contract->Project->ProjectID}}">
+
+						<div class="form-group">
+							<label>Project</label>
+							<input type="text" class="form-control {{ $errors->has('project') ? 'error' : '' }}" name="project" id="project" value="{{$contract->Project->Description}}" disabled>
+						</div>
+
+						<div class="form-group">
+							<label>Subject</label>
+							<input type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="description" id="description">
+							@if ($errors->has('description'))
+							<div class="error">
+								{{ $errors->first('description') }}
+							</div>
+							@endif
+						</div>
+
+						<div class="form-group">
+							<label>Subcontract Line</label>
+							<table class="table table-striped table-bordered">
+								<thead>
+									<th>Include</th>
+									<th>Line #</th>
+									<th>Description</th>
+									<th>Revised Contract Amount</th>
+									<th>Unbilled Amount</th>
+									<th>Change Amount</th>
+								</thead>
+								@foreach ($contract->SubcontractLines as $detail)
+								<tr>
+									<td>
+										<div class="form-check">
+											<input class="form-check-input woLineItem" type="checkbox" name="woLine[{{$detail->id}}][check]" id="woLineCheck[]" value="{{$detail->id}}">
+											<input type="hidden" name="woLine[{{$detail->id}}][projectTask]" id="projectTask{{$detail->id}}" value="{{$detail->ProjectTask}}">
+											<input type="hidden" name="woLine[{{$detail->id}}][costCode]" id="costCode{{$detail->id}}" value="{{$detail->CostCode}}">
+											<input type="hidden" name="woLine[{{$detail->id}}][invId]" id="invId{{$detail->id}}" value="{{$detail->InventoryID}}">
+											<input type="hidden" name="woLine[{{$detail->id}}][lineNbr]" id="lineNbr{{$detail->id}}" value="{{$detail->LineNbr}}">
+											<input type="hidden" name="woLine[{{$detail->id}}][project]" id="project{{$detail->id}}" value="{{$detail->Project}}">
+										</div>
+									</td>
+									<td>{{$detail->LineNbr}}</td>
+									<td>
+										
+										<div class="form-group">
+											<input type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="woLine[{{$detail->id}}][desc]" id="desc{{$detail->id}}" disabled>
+											@if ($errors->has('woLine['.$detail->id.'][desc]'))
+											<div class="error">
+												{{ $errors->first('woLine['.$detail->id.'][desc]') }}
+											</div>
+											@endif
+										</div>
+									</td>
+									<td>@currency($detail->ExtCost)</td>
+									<td>@currency($detail->UnbilledAmount)</td>
+									<td><input type="text" class="currency form-control {{ $errors->has('lineAmount') ? 'error' : '' }}" name="woLine[{{$detail->id}}][lineAmount]" id="lineAmount{{$detail->id}}" disabled></td>
+								</tr>
+								@endforeach
+							</table>
+						</div>
+
+
+						<div class="form-group">
+							<label>Detailed Description</label>
+							<textarea  type="text" class="form-control {{ $errors->has('description') ? 'error' : '' }}" name="detailedDescription" id="detailedDescription"></textarea>
+							@if ($errors->has('detailedDescription'))
+							<div class="error">
+								{{ $errors->first('detailedDescription') }}
+							</div>
+							@endif
+						</div>
+						<br>
+					</div>
+					<div class="modal-footer">
+						<button type="submit" class="btn btn-primary loading">Create</button>
+					</form>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+
+
 	<div class="modal fade modal-lg" id="acceptModal" tabindex="-1" aria-labelledby="acceptModalLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content alert alert-warning">
@@ -537,6 +644,70 @@
 
 
 
+	@foreach ($contract->ChangeOrders as $co)
+	<div class="modal fade modal-lg" id="wo{{$co->ReferenceNbr}}AttachmentsModal" tabindex="-1" aria-labelledby="wo{{$co->ReferenceNbr}}AttachmentsModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="wo{{$co->ReferenceNbr}}AttachmentsModalLabel">Work Order Attachments</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<table class="table">
+						@if (!isset($co->files))
+						<p>No Attachments Found</p>
+						@else
+						<table class="table table-striped">
+							<thead>
+								<th>Filename</th>
+								<th>Download</th>
+							</thead>
+							@foreach ($co->files as $file)
+							<tr>
+								<td>{{substr($file->filename, strrpos($file->filename, '\\') + 1)}}</td>
+								<td><a class="" href="file/{{$file->id}}/{{substr($file->filename, strrpos($file->filename, '\\') + 1)}}" target="_blank"><i class="bi bi-download"></i></a></td>
+							</tr>
+							@endforeach
+						</table>
+						@endif
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	<div class="modal fade modal-lg" id="wo{{$co->ReferenceNbr}}FileModal" tabindex="-1" aria-labelledby="wo{{$co->ReferenceNbr}}FileModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="wo{{$co->ReferenceNbr}}FileModalLabel">Attach file to Work Ordere #{{$co->ReferenceNbr}}</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					<p class="alert alert-warning">
+						Accepted file types: .jpg .pdf
+					</p>
+					<form action="/wo/file" method="post" enctype="multipart/form-data">
+						@csrf
+						<input type="hidden" name="nbr" value="{{$co->ReferenceNbr}}">
+						<input type="hidden" name="id" value="{{$co->id}}">
+						<input type="file" class="form-control" name="attachment" id="attachment">
+						<hr>
+						<button class="btn btn-success loading" type="submit">Upload File</button>
+					</form>
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+	@endforeach
+
+
+
+
+
 
 
 	<div class="modal fade modal-lg" id="newFileModal" tabindex="-1" aria-labelledby="newFileModalLabel" aria-hidden="true">
@@ -548,7 +719,7 @@
 				</div>
 				<div class="modal-body">
 					<p class="alert alert-warning">
-						Accepted file types: .jpg .pdf
+						Accepted file types: .pdf .jpg .jpeg .png .dwg .zip
 					</p>
 					<form action="/contract/file" method="post" enctype="multipart/form-data">
 						@csrf
@@ -569,6 +740,16 @@
 	@section('scripts')
 
 	<script>
+		$(document).ready(function () {
+			$('.currency').on('change click keyup input paste',(function (event) {
+				$(this).val(function (index, value) {
+					return value.replace(/(?!\.)\D/g, "")
+					.replace(/(?<=\..*)\./g, "")
+                          .replace(/(?<=\.\d\d).*/g, "")
+					.replace(/\B(?=(\d{3})+(?!\d))/g, "");
+				});
+			}));
+		});
 
 		$(document).ready( function () {
 			$('.datatable-bills').DataTable({
@@ -581,6 +762,22 @@
 					{ "width": "5%" },
 					{ "width": "5%" },
 					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "25%" },
+					],
+			});
+
+
+			$('.datatable-wos').DataTable({
+				"autoWidth": false,
+				"columns": [
+					@if ($contract->Accepted == 1)
+					{ "width": "8%" },
+					@endif
+					{ "width": "8%" },
+					{ "width": "5%" },
+					{ "width": "5%" },
+					{ "width": "25%" },
 					{ "width": "5%" },
 					{ "width": "25%" },
 					],
@@ -601,6 +798,9 @@
 					{ "width": "35%" },
 					],
 			});
+
+
+
 
 		} );
 
@@ -741,5 +941,20 @@
 
 			$('#totalAmount').val(+amount);
 		}
+
+
+
+		$('.woLineItem').on('click', function() {
+			if($(this).is(':checked'))
+			{
+				$('#lineAmount'+$(this).val()).removeAttr('disabled');
+				$('#desc'+$(this).val()).removeAttr('disabled');
+			}else{
+				$('#lineAmount'+$(this).val()).attr('disabled',true);
+				$('#desc'+$(this).val()).attr('disabled',true);
+			}
+		});
+
+
 	</script>
 	@stop

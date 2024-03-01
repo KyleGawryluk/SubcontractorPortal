@@ -43,6 +43,12 @@ Route::controller(ContractController::class)->middleware(['cookie','details'])->
 	Route::post('/invoice','createInvoice');
 	Route::get('/invoice/pdf/{id}','printInvoice');
 
+	Route::post('/co','createChangeOrder');
+	Route::post('/co/file','uploadChangeOrderFile');
+	Route::get('/co/file/{id}/{filename}','getChangeOrderFile');
+	Route::get('/co/pdf/{id}','printChangeOrder');
+	
+
 	Route::get('/co/pdf/{id}','printCO');
 });
 

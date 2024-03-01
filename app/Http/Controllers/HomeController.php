@@ -34,6 +34,12 @@ class HomeController extends Controller
 
         $body = json_decode($response->body());
 
+
+        // echo "<pre>";
+        // print_r($body);
+        // echo "</pre>";
+        // exit;
+
         Cookie::queue('oauth', $response->body(), 60);
         Cookie::queue('token', $body->access_token, 60);
 

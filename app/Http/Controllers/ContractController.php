@@ -11,13 +11,6 @@ use PDF;
 
 class ContractController extends Controller
 {
-
-    // echo "<pre>";
-    // print_r($response->body());
-    // echo "</pre>";
-    // exit;
-
-
     public function getContracts()
     {
         $response = Http::withHeaders([
@@ -36,24 +29,22 @@ class ContractController extends Controller
 
         foreach ($contracts as $contract) {
             if ($contract->Status != 'On Hold') {
-               if ($contract->SubcontractNbrStatus == 'N' ) {
-                 $open_contracts->$i = $contract;
-             }else{
-                $archived_contracts->$i = $contract;
-            }
+             if ($contract->SubcontractNbrStatus == 'N' ) {
+               $open_contracts->$i = $contract;
+           }else{
+            $archived_contracts->$i = $contract;
         }
-
-
-        $i++;
     }
+    $i++;
+}
 
 
-    // echo "<pre>";
-    // print_r($open_contracts);
-    // echo "</pre>";
-    // exit;
+// echo "<pre>";
+// print_r($response->body());
+// echo "</pre>";
+// exit;
 
-    return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
+return view('contract.contracts', ['open_contracts'=>$open_contracts,'archived_contracts'=>$archived_contracts]);
 }
 
 
@@ -61,8 +52,7 @@ class ContractController extends Controller
 public function uploadFile(Request $request)
 {
     $request->validate([
-       // 'attachment' => 'required|mimes:pdf,jpg,jpeg,png,gif |max:5120',
-     'attachment' => 'required|max:5120',
+     'attachment' => 'required|mimes:pdf,jpg,jpeg,png,gif,dwg,zip |max:5120',
  ]);
 
     $file = $request->file('attachment');
@@ -84,21 +74,22 @@ public function uploadFile(Request $request)
 }
 
 
+
 public function getFile($id, $filename)
 {
- $response = Http::withHeaders([
+   $response = Http::withHeaders([
     'Authorization' => 'Bearer '.Cookie::get('token'),
 ])->get(config('api.URL')."Subcontracts/20.200.001/files/".$id);
 
- $file = $response->getBody()->getContents();
+   $file = $response->getBody()->getContents();
 
- $headers = [
+   $headers = [
     'Content-Type' => 'application/octet-stream',
     'Content-Disposition' => 'attachment; filename='.$filename.';',
 ];
 
 return response()->streamDownload(function () use ($file){
-   echo $file;
+ echo $file;
 }, $filename,$headers);
 }
 
@@ -107,8 +98,8 @@ return response()->streamDownload(function () use ($file){
 public function uploadBillFile(Request $request)
 {
     $request->validate([
-     'attachment' => 'required|mimes:pdf,jpg,jpeg,png,gif |max:5120',
- ]);
+       'attachment' => 'required|mimes:pdf,jpg,jpeg,png,gif |max:5120',
+   ]);
 
     $file = $request->file('attachment');
     $nbr = $request->input('nbr');
@@ -129,21 +120,68 @@ public function uploadBillFile(Request $request)
 }
 
 
+
 public function getBillFile($id, $filename)
 {
- $response = Http::withHeaders([
+   $response = Http::withHeaders([
     'Authorization' => 'Bearer '.Cookie::get('token'),
 ])->get(config('api.URL')."Subcontracts/20.200.001/files/".$id);
 
- $file = $response->getBody()->getContents();
+   $file = $response->getBody()->getContents();
 
- $headers = [
+   $headers = [
     'Content-Type' => 'application/octet-stream',
     'Content-Disposition' => 'attachment; filename='.$filename.';',
 ];
 
 return response()->streamDownload(function () use ($file){
-   echo $file;
+ echo $file;
+}, $filename,$headers);
+}
+
+
+
+public function uploadChangeOrderFile(Request $request)
+{
+    $request->validate([
+       'attachment' => 'required|mimes:pdf,jpg,jpeg,png,gif |max:5120',
+   ]);
+
+    $file = $request->file('attachment');
+    $nbr = $request->input('nbr');
+    $name = $file->getClientOriginalName();
+    $mime = $file->getClientMimeType();
+    $file->move('files',$name);
+    $path = public_path('files/').$name;
+
+    $content = file_get_contents($path);
+    
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
+    ])->withBody($content, $mime)
+    ->withHeaders(['Content-Type' => $mime,'Accept'=> $mime])
+    ->put(config('api.URL')."Subcontracts/20.200.001/ChangeRequests/".$nbr."/files/".$name);
+
+    return redirect()->back()->with('status', $name.' has been uploaded');
+}
+
+
+
+public function getChangeOrderFile($id, $filename)
+{
+   $response = Http::withHeaders([
+    'Authorization' => 'Bearer '.Cookie::get('token'),
+])->get(config('api.URL')."Subcontracts/20.200.001/files/".$id);
+
+   $file = $response->getBody()->getContents();
+
+   $headers = [
+    'Content-Type' => 'application/octet-stream',
+    'Content-Disposition' => 'attachment; filename='.$filename.';',
+];
+
+return response()->streamDownload(function () use ($file){
+ echo $file;
 }, $filename,$headers);
 }
 
@@ -163,7 +201,7 @@ public function buildContract($id)
 {
     $response = Http::withHeaders([
         'Authorization' => 'Bearer '.Cookie::get('token'),
-    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines/files,Bills/files,ChangeOrders,files');
+    ])->get(config('api.URL').'Subcontracts/20.200.001/Subcontract/'.$id.'?$expand=SubcontractLines/files,Bills/files,ChangeOrders/files,files');
 
     $dataController = new DataController();
 
@@ -173,34 +211,26 @@ public function buildContract($id)
 
     $contract = json_decode($contract);
 
-    $contract->Project = $this->getContractProject($contract->SubcontractLines[0]->ProjectProjectID);
-
-    $contract->Project = json_decode($contract->Project);
+    $contract->Project = json_decode($this->getContractProject($contract->SubcontractLines[0]->ProjectProjectID));
 
     $contract->Bills = $this->getBills($contract);
-
-   //     echo "<pre>";
-   // print_r($contract);
-   // echo "</pre>";
-   // exit;
 
     $contract = $this->checkBilling($contract);
 
     $contract = $this->parseCOs($contract);
 
     if (is_array($contract->AcceptedBy) && is_array($contract->AcceptedDate) && is_array($contract->Accepted)) {
-       $contract->Accepted = 0;
-   }else{
-       $contract->Accepted = 1; 
-   }
-
+     $contract->Accepted = 0;
+ }else{
+     $contract->Accepted = 1; 
+ }
 
    // echo "<pre>";
    // print_r($contract);
    // echo "</pre>";
    // exit;
 
-   return $contract;
+ return $contract;
 }
 
 
@@ -210,16 +240,16 @@ public function getBills($contract)
 
     foreach ($contract->Bills as $index => $bill) {
 
-       $response = Http::withHeaders([
+     $response = Http::withHeaders([
         'Authorization' => 'Bearer '.Cookie::get('token'),
     ])->get(config('api.URL').'Subcontracts/20.200.001/Bill/INV/'.$bill->ReferenceNbr.'?$expand=files');
 
+     $contract->Bills[$index] = json_decode($dataController->convertToSingleObject($response->body()));
+ }
 
-       $contract->Bills[$index] = json_decode($dataController->convertToSingleObject($response->body()));
-   }
-
-   return $contract->Bills;
+ return $contract->Bills;
 }
+
 
 
 public function getContractProject($projectID)
@@ -234,6 +264,79 @@ public function getContractProject($projectID)
 
     return $project;
 }
+
+
+
+
+
+
+public function createChangeOrder(Request $request)
+{
+    $lines = $request->input('woLine');
+
+    $parsedLines = [];
+
+    foreach ($lines as $line) {
+      if (isset($line['check'])) {
+        $newLine = [];
+        $newLine['ProjectTaskID']['value'] = $line['projectTask'];
+        $newLine['CostCode']['value'] = $line['costCode'];
+        $newLine['InventoryID']['value'] = $line['invId'];
+        $newLine['Qty']['value'] = 1;
+        $newLine['UnitCost']['value'] = $line['lineAmount'];
+        $newLine['CommitmentType']['value'] = 'Subcontract';
+        $newLine['PONbr']['value'] = $request->input('contractNbr');
+        $newLine['POLineNbr']['value'] = $line['lineNbr'];
+        $newLine['LineDescription']['value'] = $line['desc'];
+        $newLine['Vendor']['value'] = Cookie::get('account_id');
+        $parsedLines[$line['project']][] = $newLine;
+    }
+}
+
+foreach ($parsedLines as $project => $lines) {
+    $data = [];
+
+    $data['ChangeDate']['value'] = date("m/d/Y");
+    $data['CompletionDate']['value'] = date("m/d/Y");
+    $data['Description']['value'] = $request->input('description');
+    $data['Class']['value'] = 'Customer';
+    $data['Customer']['value'] = Cookie::get('account_id');
+    $data['ProjectID']['value'] = $project;
+    $data['ExternalRefNbr']['value'] = $request->input('contractNbr');
+    $data['DetailedDescription']['value'] = $request->input('detailedDescription');
+    $data['Commitments'] = [];
+
+    foreach ($lines as $line) {
+        $data['Commitments'][] = $line;
+    }
+
+
+    $response = Http::withHeaders([
+        'Authorization' => 'Bearer '.Cookie::get('token'),
+    ])
+    ->withBody(json_encode($data),'application/json')
+    ->put(config('api.URL').'Subcontracts/20.200.001/ChangeOrder');
+
+    $changeOrder = json_decode($response->body());
+
+    if (isset($workOrder->error)) {
+     return back()->withErrors(['status'=>$changeOrder->error]);
+ }
+
+}
+
+
+// $wo_data['entity']['id'] = $changeOrder->id;
+
+// $action = Http::withHeaders([
+//     'Authorization' => 'Bearer '.Cookie::get('token'),
+// ])
+// ->withBody(json_encode($wo_data),'application/json')
+// ->post(config('api.URL').'Subcontracts/20.200.001/ChangeRequests/RemoveHold');
+
+return back()->withSuccess(['status'=>'Work Order Request has been Created']);
+}
+
 
 
 public function acceptContract(Request $request)
@@ -259,18 +362,18 @@ public function createInvoice(Request $request)
 {
 
     if ($request->input('totalAmount') <= 0) {
-       return back()->withError('Invoice Amount Cannot be 0');
-   }
+     return back()->withError('Invoice Amount Cannot be 0');
+ }
 
-   $data = [];
+ $data = [];
 
-   $data['Vendor']['value'] = $request->input('vendor');
-   $data['VendorRef']['value'] = $request->input('vendref');
-   $data['Description']['value'] = $request->input('description');
-   $data['Amount']['value'] = $request->input('totalAmount');
-   $data['Details'] = [];
+ $data['Vendor']['value'] = $request->input('vendor');
+ $data['VendorRef']['value'] = $request->input('vendref');
+ $data['Description']['value'] = $request->input('description');
+ $data['Amount']['value'] = $request->input('totalAmount');
+ $data['Details'] = [];
 
-   foreach ($request->input('lines') as $line) {
+ foreach ($request->input('lines') as $line) {
     $newLine = [];
     $newLine['POOrderType']['value'] = 'Subcontract';
     $newLine['POOrderNbr']['value'] = $request->input('contractNbr');
@@ -290,10 +393,10 @@ $response = Http::withHeaders([
 $invoice = json_decode($response->body());
 
 
-echo "<pre>";
-print_r($invoice);
-echo "</pre>";
-exit;
+// echo "<pre>";
+// print_r($invoice);
+// echo "</pre>";
+// exit;
 
 $inv_data = ['entity'];
 
@@ -308,29 +411,29 @@ $action = Http::withHeaders([
 ->post(config('api.URL').'Subcontracts/20.200.001/Bill/ReleaseFromHold');
 
 
-$pdf = $this->saveInvoice($invoice->id);
+// $pdf = $this->saveInvoice($invoice->id);
 
-echo "<pre>";
-print_r($pdf);
-echo "</pre>";
-exit;
+// echo "<pre>";
+// print_r($pdf);
+// echo "</pre>";
+// exit;
 
-$request->validate([
- 'attachment' => 'required|mimes:pdf,jpg|max:2048',
-]);
+// $request->validate([
+//    'attachment' => 'required|mimes:pdf,jpg|max:2048',
+// ]);
 
-$file = $request->file('attachment');
-$nbr = $request->input('nbr');
-$name = $file->getClientOriginalName();
-$mime = $file->getClientMimeType();
-$file->move('files',$name);
-$path = public_path('files/').$name;
+// $file = $request->file('attachment');
+// $nbr = $request->input('nbr');
+// $name = $file->getClientOriginalName();
+// $mime = $file->getClientMimeType();
+// $file->move('files',$name);
+// $path = public_path('files/').$name;
 
-$response = Http::withHeaders([
-    'Authorization' => 'Bearer '.Cookie::get('token'),
-])->attach('file', file_get_contents($path), $name)
-->withHeaders(['Content-Type' => $mime])
-->put(config('api.URL')."Subcontracts/20.200.001/Subcontract/".$nbr."/files/".$name);
+// $response = Http::withHeaders([
+//     'Authorization' => 'Bearer '.Cookie::get('token'),
+// ])->attach('file', file_get_contents($path), $name)
+// ->withHeaders(['Content-Type' => $mime])
+// ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract/".$nbr."/files/".$name);
 
 return redirect()->back()->with('status', $name.' has been uploaded');
 
@@ -347,7 +450,7 @@ public function checkBilling($contract)
     $billed = 0;
 
     foreach ($contract->Bills as $bill) {
-       if ($bill->Status != 'Rejected') {
+     if ($bill->Status != 'Rejected') {
         $billed += $bill->Amount;
     }
 }
@@ -355,7 +458,7 @@ public function checkBilling($contract)
 if ($billed < $total) {
     $contract->BillComplete = 0;
 }else{
- $contract->BillComplete = 1;
+   $contract->BillComplete = 1;
 }
 
 return $contract;
@@ -367,22 +470,27 @@ public function parseCOs($contract)
 {
     $totalCoAmt = 0;
 
+    // echo "<pre>";
+    // print_r($contract);
+    // echo "</pre>";
+    // exit;
+
 
     foreach ($contract->SubcontractLines as $key => $line) {
         $contract->SubcontractLines[$key]->ChangeAmt = 0;
         foreach ($contract->ChangeOrders as $co) {
-         if ($line->LineNbr == $co->POLineNbr) {
-             $contract->SubcontractLines[$key]->ChangeAmt = $co->Amount;
-         }
-         $totalCoAmt += $co->Amount;
-     }
- }
+           if ($line->LineNbr == $co->POLineNbr) {
+               $contract->SubcontractLines[$key]->ChangeAmt = $co->Amount;
+           }
+           $totalCoAmt += $co->Amount;
+       }
+   }
 
- $contract->ChangeOrderTotal = $totalCoAmt;
+   $contract->ChangeOrderTotal = $totalCoAmt;
 
- $contract->OriginalContractAmt = $contract->SubcontractTotal - $totalCoAmt;
+   $contract->OriginalContractAmt = $contract->SubcontractTotal - $totalCoAmt;
 
- return $contract;
+   return $contract;
 }
 
 
@@ -489,9 +597,9 @@ public static function parseLines($dataset)
 }
 
 foreach ($parsed as $key => $value) {
-   if (is_object($value)) {
-       $parsed->$key = '';
-   }
+ if (is_object($value)) {
+     $parsed->$key = '';
+ }
 }
 
 return $parsed;
