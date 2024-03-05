@@ -399,9 +399,6 @@ $invoice = json_decode($response->body());
 // exit;
 
 $inv_data = ['entity'];
-
-    // $inv_data['entity']['RefNbr'] = $invoice->ReferenceNbr->value;
-    // $inv_data['entity']['DocType'] = 'INV';
 $inv_data['entity']['id'] = $invoice->id;
 
 $action = Http::withHeaders([
@@ -435,7 +432,7 @@ $action = Http::withHeaders([
 // ->withHeaders(['Content-Type' => $mime])
 // ->put(config('api.URL')."Subcontracts/20.200.001/Subcontract/".$nbr."/files/".$name);
 
-return redirect()->back()->with('status', $name.' has been uploaded');
+// return redirect()->back()->with('status', $name.' has been uploaded');
 
 
 
@@ -480,11 +477,22 @@ public function parseCOs($contract)
         $contract->SubcontractLines[$key]->ChangeAmt = 0;
         foreach ($contract->ChangeOrders as $co) {
            if ($line->LineNbr == $co->POLineNbr) {
+            if ($co->Status != 'On Hold') {
                $contract->SubcontractLines[$key]->ChangeAmt = $co->Amount;
+            }
+               
            }
-           $totalCoAmt += $co->Amount;
+          
        }
+        $totalCoAmt += $contract->SubcontractLines[$key]->ChangeAmt;
    }
+
+
+    // echo "<pre>";
+    // print_r($contract->SubcontractLines);
+    // echo "</pre>";
+    // exit;
+
 
    $contract->ChangeOrderTotal = $totalCoAmt;
 
